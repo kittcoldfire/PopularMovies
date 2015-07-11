@@ -40,6 +40,7 @@ import phil.nanodegree.com.popularmovies.utilities.Utils;
 
 public class MovieDetailFragment extends Fragment {
 
+    private ArrayList<Movie> mMovies;
     public Movie mMovie;
     public int movieId;
 
@@ -85,13 +86,20 @@ public class MovieDetailFragment extends Fragment {
     }
 
     @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putParcelable("movie", mMovie);
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        if(savedInstanceState == null) {
+        if(savedInstanceState == null || !savedInstanceState.containsKey("movie")) {
             MovieAsyncTask task = new MovieAsyncTask();
             task.execute();
         } else {
+            mMovie = savedInstanceState.getParcelable("movie");
             if(mMovie != null) {
                 Utils utils = new Utils();
                 txtTitle.setText(mMovie.getTitle());

@@ -5,6 +5,9 @@
       <config />
     </shared>
   </component>
+  <component name="AndroidLogFilters">
+    <option name="TOOL_WINDOW_CONFIGURED_FILTER" value="Show only selected application" />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="e785bf6d-ccd6-4e1f-8a75-9e21b7d90b6f" name="Default" comment="" />
     <ignored path="PopularMovies.iws" />
@@ -37,24 +40,26 @@
         <entry file="file://$PROJECT_DIR$/app/src/main/java/phil/nanodegree/com/popularmovies/MainActivityFragment.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="214" column="27" selection-start-line="214" selection-start-column="27" selection-end-line="214" selection-end-column="27" />
+              <caret line="140" column="76" selection-start-line="140" selection-start-column="76" selection-end-line="140" selection-end-column="76" />
               <folding>
                 <element signature="imports" expanded="true" />
-                <element signature="e#5405#5426#0" expanded="true" />
-                <element signature="e#5526#5548#0" expanded="true" />
-                <element signature="e#5649#5673#0" expanded="true" />
-                <element signature="e#12145#12166#0" expanded="true" />
-                <element signature="e#12274#12296#0" expanded="true" />
+                <element signature="e#7366#7387#0" expanded="true" />
+                <element signature="e#7487#7509#0" expanded="true" />
+                <element signature="e#7610#7634#0" expanded="true" />
+                <element signature="e#14136#14157#0" expanded="true" />
+                <element signature="e#14265#14287#0" expanded="true" />
+                <element signature="e#14397#14421#0" expanded="true" />
+                <element signature="e#14648#14655#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="MovieDetailFragment.java" pinned="false" current-in-tab="true">
+      <file leaf-file-name="MovieDetailFragment.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/src/main/java/phil/nanodegree/com/popularmovies/MovieDetailFragment.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-3.5671642">
-              <caret line="93" column="16" selection-start-line="93" selection-start-column="16" selection-end-line="93" selection-end-column="16" />
+            <state vertical-scroll-proportion="0.0">
+              <caret line="89" column="37" selection-start-line="89" selection-start-column="37" selection-end-line="89" selection-end-column="37" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -62,11 +67,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Utils.java" pinned="false" current-in-tab="false">
+      <file leaf-file-name="Utils.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app/src/main/java/phil/nanodegree/com/popularmovies/utilities/Utils.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="64" column="77" selection-start-line="64" selection-start-column="77" selection-end-line="64" selection-end-column="77" />
+            <state vertical-scroll-proportion="0.2445465">
+              <caret line="20" column="107" selection-start-line="20" selection-start-column="107" selection-end-line="20" selection-end-column="107" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -78,7 +83,7 @@
         <entry file="file://$PROJECT_DIR$/app/src/main/java/phil/nanodegree/com/popularmovies/MainActivity.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="15" column="70" selection-start-line="15" selection-start-column="70" selection-end-line="15" selection-end-column="70" />
+              <caret line="12" column="0" selection-start-line="12" selection-start-column="0" selection-end-line="12" selection-end-column="0" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -90,10 +95,17 @@
         <entry file="file://$PROJECT_DIR$/app/src/main/java/phil/nanodegree/com/popularmovies/models/Movie.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="100" column="33" selection-start-line="100" selection-start-column="33" selection-end-line="100" selection-end-column="33" />
+              <caret line="159" column="6" selection-start-line="159" selection-start-column="6" selection-end-line="159" selection-end-column="6" />
               <folding>
-                <element signature="e#2285#2286#0" expanded="true" />
-                <element signature="e#2326#2327#0" expanded="true" />
+                <element signature="imports" expanded="true" />
+                <element signature="e#3101#3102#0" expanded="true" />
+                <element signature="e#3142#3143#0" expanded="true" />
+                <element signature="e#3193#3194#0" expanded="true" />
+                <element signature="e#3217#3218#0" expanded="true" />
+                <element signature="e#3806#3807#0" expanded="true" />
+                <element signature="e#3854#3855#0" expanded="true" />
+                <element signature="e#3917#3918#0" expanded="true" />
+                <element signature="e#3963#3964#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -1467,19 +1479,19 @@
         <option value="$PROJECT_DIR$/app/src/main/java/phil/nanodegree/com/popularmovies/adapters/GridMoviePosterAdapter.java" />
         <option value="$PROJECT_DIR$/app/src/main/res/layout/grid_movie_poster.xml" />
         <option value="$PROJECT_DIR$/app/src/main/res/layout/activity_main.xml" />
-        <option value="$PROJECT_DIR$/app/src/main/java/phil/nanodegree/com/popularmovies/models/Movie.java" />
         <option value="$PROJECT_DIR$/app/src/main/res/values/colors.xml" />
         <option value="$PROJECT_DIR$/app/src/main/res/values/styles.xml" />
         <option value="$PROJECT_DIR$/app/src/main/res/layout/fragment_movie_detail.xml" />
         <option value="$PROJECT_DIR$/app/src/main/res/menu/menu_main.xml" />
-        <option value="$PROJECT_DIR$/app/src/main/res/values/strings.xml" />
         <option value="$PROJECT_DIR$/app/src/main/res/menu/menu_sort.xml" />
         <option value="$PROJECT_DIR$/app/build.gradle" />
-        <option value="$PROJECT_DIR$/app/src/main/java/phil/nanodegree/com/popularmovies/MainActivity.java" />
         <option value="$PROJECT_DIR$/app/src/main/res/layout/fragment_main.xml" />
-        <option value="$PROJECT_DIR$/app/src/main/java/phil/nanodegree/com/popularmovies/MainActivityFragment.java" />
-        <option value="$PROJECT_DIR$/app/src/main/java/phil/nanodegree/com/popularmovies/MovieDetailFragment.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/phil/nanodegree/com/popularmovies/utilities/Utils.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/phil/nanodegree/com/popularmovies/models/Movie.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/phil/nanodegree/com/popularmovies/MovieDetailFragment.java" />
+        <option value="$PROJECT_DIR$/app/src/main/res/values/strings.xml" />
+        <option value="$PROJECT_DIR$/app/src/main/java/phil/nanodegree/com/popularmovies/MainActivity.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/phil/nanodegree/com/popularmovies/MainActivityFragment.java" />
       </list>
     </option>
   </component>
@@ -2249,22 +2261,22 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1936" height="1056" extended-state="7" />
+    <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25695217" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25695217" sideWeight="0.4978678" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Build Variants" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3298969" sideWeight="0.50213903" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32814237" sideWeight="0.5042644" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Preview" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.26066098" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32925472" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32925472" sideWeight="0.4978678" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Captures" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Android" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32814237" sideWeight="0.49786097" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Android" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32814237" sideWeight="0.49573562" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Gradle Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.15938166" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
@@ -2294,7 +2306,45 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="14" />
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/app/src/main/java/phil/nanodegree/com/popularmovies/MainActivityFragment.java</url>
+          <line>143</line>
+          <properties />
+          <option name="timeStamp" value="19" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/app/src/main/java/phil/nanodegree/com/popularmovies/MainActivityFragment.java</url>
+          <line>369</line>
+          <properties />
+          <option name="timeStamp" value="20" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/app/src/main/java/phil/nanodegree/com/popularmovies/MainActivityFragment.java</url>
+          <line>125</line>
+          <properties />
+          <option name="timeStamp" value="21" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/app/src/main/java/phil/nanodegree/com/popularmovies/MainActivityFragment.java</url>
+          <line>390</line>
+          <properties />
+          <option name="timeStamp" value="24" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/app/src/main/java/phil/nanodegree/com/popularmovies/MainActivityFragment.java</url>
+          <line>342</line>
+          <properties />
+          <option name="timeStamp" value="25" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/app/src/main/java/phil/nanodegree/com/popularmovies/MainActivityFragment.java</url>
+          <line>321</line>
+          <properties />
+          <option name="timeStamp" value="28" />
+        </line-breakpoint>
+      </breakpoints>
+      <option name="time" value="29" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -2305,11 +2355,13 @@
           <caret line="231" column="0" selection-start-line="231" selection-start-column="0" selection-end-line="231" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#5405#5426#0" expanded="true" />
-            <element signature="e#5526#5548#0" expanded="true" />
-            <element signature="e#5649#5673#0" expanded="true" />
-            <element signature="e#12145#12166#0" expanded="true" />
-            <element signature="e#12274#12296#0" expanded="true" />
+            <element signature="e#7366#7387#0" expanded="true" />
+            <element signature="e#7487#7509#0" expanded="true" />
+            <element signature="e#7610#7634#0" expanded="true" />
+            <element signature="e#14136#14157#0" expanded="true" />
+            <element signature="e#14265#14287#0" expanded="true" />
+            <element signature="e#14397#14421#0" expanded="true" />
+            <element signature="e#14648#14655#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -2329,8 +2381,15 @@
         <state vertical-scroll-proportion="0.0">
           <caret line="100" column="33" selection-start-line="100" selection-start-column="33" selection-end-line="100" selection-end-column="33" />
           <folding>
-            <element signature="e#2285#2286#0" expanded="true" />
-            <element signature="e#2326#2327#0" expanded="true" />
+            <element signature="imports" expanded="true" />
+            <element signature="e#3101#3102#0" expanded="true" />
+            <element signature="e#3142#3143#0" expanded="true" />
+            <element signature="e#3193#3194#0" expanded="true" />
+            <element signature="e#3217#3218#0" expanded="true" />
+            <element signature="e#3806#3807#0" expanded="true" />
+            <element signature="e#3854#3855#0" expanded="true" />
+            <element signature="e#3917#3918#0" expanded="true" />
+            <element signature="e#3963#3964#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -2377,11 +2436,13 @@
           <caret line="231" column="0" selection-start-line="231" selection-start-column="0" selection-end-line="231" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#5405#5426#0" expanded="true" />
-            <element signature="e#5526#5548#0" expanded="true" />
-            <element signature="e#5649#5673#0" expanded="true" />
-            <element signature="e#12145#12166#0" expanded="true" />
-            <element signature="e#12274#12296#0" expanded="true" />
+            <element signature="e#7366#7387#0" expanded="true" />
+            <element signature="e#7487#7509#0" expanded="true" />
+            <element signature="e#7610#7634#0" expanded="true" />
+            <element signature="e#14136#14157#0" expanded="true" />
+            <element signature="e#14265#14287#0" expanded="true" />
+            <element signature="e#14397#14421#0" expanded="true" />
+            <element signature="e#14648#14655#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -2401,8 +2462,15 @@
         <state vertical-scroll-proportion="0.0">
           <caret line="100" column="33" selection-start-line="100" selection-start-column="33" selection-end-line="100" selection-end-column="33" />
           <folding>
-            <element signature="e#2285#2286#0" expanded="true" />
-            <element signature="e#2326#2327#0" expanded="true" />
+            <element signature="imports" expanded="true" />
+            <element signature="e#3101#3102#0" expanded="true" />
+            <element signature="e#3142#3143#0" expanded="true" />
+            <element signature="e#3193#3194#0" expanded="true" />
+            <element signature="e#3217#3218#0" expanded="true" />
+            <element signature="e#3806#3807#0" expanded="true" />
+            <element signature="e#3854#3855#0" expanded="true" />
+            <element signature="e#3917#3918#0" expanded="true" />
+            <element signature="e#3963#3964#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -2449,11 +2517,13 @@
           <caret line="231" column="0" selection-start-line="231" selection-start-column="0" selection-end-line="231" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#5405#5426#0" expanded="true" />
-            <element signature="e#5526#5548#0" expanded="true" />
-            <element signature="e#5649#5673#0" expanded="true" />
-            <element signature="e#12145#12166#0" expanded="true" />
-            <element signature="e#12274#12296#0" expanded="true" />
+            <element signature="e#7366#7387#0" expanded="true" />
+            <element signature="e#7487#7509#0" expanded="true" />
+            <element signature="e#7610#7634#0" expanded="true" />
+            <element signature="e#14136#14157#0" expanded="true" />
+            <element signature="e#14265#14287#0" expanded="true" />
+            <element signature="e#14397#14421#0" expanded="true" />
+            <element signature="e#14648#14655#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -2473,8 +2543,15 @@
         <state vertical-scroll-proportion="0.0">
           <caret line="100" column="33" selection-start-line="100" selection-start-column="33" selection-end-line="100" selection-end-column="33" />
           <folding>
-            <element signature="e#2285#2286#0" expanded="true" />
-            <element signature="e#2326#2327#0" expanded="true" />
+            <element signature="imports" expanded="true" />
+            <element signature="e#3101#3102#0" expanded="true" />
+            <element signature="e#3142#3143#0" expanded="true" />
+            <element signature="e#3193#3194#0" expanded="true" />
+            <element signature="e#3217#3218#0" expanded="true" />
+            <element signature="e#3806#3807#0" expanded="true" />
+            <element signature="e#3854#3855#0" expanded="true" />
+            <element signature="e#3917#3918#0" expanded="true" />
+            <element signature="e#3963#3964#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -2521,11 +2598,13 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#5405#5426#0" expanded="true" />
-            <element signature="e#5526#5548#0" expanded="true" />
-            <element signature="e#5649#5673#0" expanded="true" />
-            <element signature="e#12145#12166#0" expanded="true" />
-            <element signature="e#12274#12296#0" expanded="true" />
+            <element signature="e#7366#7387#0" expanded="true" />
+            <element signature="e#7487#7509#0" expanded="true" />
+            <element signature="e#7610#7634#0" expanded="true" />
+            <element signature="e#14136#14157#0" expanded="true" />
+            <element signature="e#14265#14287#0" expanded="true" />
+            <element signature="e#14397#14421#0" expanded="true" />
+            <element signature="e#14648#14655#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -2652,14 +2731,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/values/strings.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-2.04">
-          <caret line="6" column="57" selection-start-line="6" selection-start-column="57" selection-end-line="6" selection-end-column="57" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/grid_movie_poster.xml">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.020190023">
@@ -2669,41 +2740,6 @@
       </provider>
       <provider editor-type-id="android-designer">
         <state />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/phil/nanodegree/com/popularmovies/utilities/Utils.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="64" column="77" selection-start-line="64" selection-start-column="77" selection-end-line="64" selection-end-column="77" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/phil/nanodegree/com/popularmovies/MainActivityFragment.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="214" column="27" selection-start-line="214" selection-start-column="27" selection-end-line="214" selection-end-column="27" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#5405#5426#0" expanded="true" />
-            <element signature="e#5526#5548#0" expanded="true" />
-            <element signature="e#5649#5673#0" expanded="true" />
-            <element signature="e#12145#12166#0" expanded="true" />
-            <element signature="e#12274#12296#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/phil/nanodegree/com/popularmovies/MainActivity.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="15" column="70" selection-start-line="15" selection-start-column="70" selection-end-line="15" selection-end-column="70" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/fragment_main.xml">
@@ -2730,21 +2766,81 @@
         <state />
       </provider>
     </entry>
+    <entry file="file://$USER_HOME$/Documents/Development/Android/adt-bundle-windows-x86_64-20131030/adt-bundle-windows-x86_64-20131030/sdk/sources/android-22/android/os/Parcelable.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.33295062">
+          <caret line="55" column="17" selection-start-line="55" selection-start-column="17" selection-end-line="55" selection-end-column="17" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/phil/nanodegree/com/popularmovies/models/Movie.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="100" column="33" selection-start-line="100" selection-start-column="33" selection-end-line="100" selection-end-column="33" />
+          <caret line="159" column="6" selection-start-line="159" selection-start-column="6" selection-end-line="159" selection-end-column="6" />
           <folding>
-            <element signature="e#2285#2286#0" expanded="true" />
-            <element signature="e#2326#2327#0" expanded="true" />
+            <element signature="imports" expanded="true" />
+            <element signature="e#3101#3102#0" expanded="true" />
+            <element signature="e#3142#3143#0" expanded="true" />
+            <element signature="e#3193#3194#0" expanded="true" />
+            <element signature="e#3217#3218#0" expanded="true" />
+            <element signature="e#3806#3807#0" expanded="true" />
+            <element signature="e#3854#3855#0" expanded="true" />
+            <element signature="e#3917#3918#0" expanded="true" />
+            <element signature="e#3963#3964#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/res/values/strings.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.020094562">
+          <caret line="1" column="50" selection-start-line="1" selection-start-column="50" selection-end-line="1" selection-end-column="50" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/phil/nanodegree/com/popularmovies/MainActivity.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="12" column="0" selection-start-line="12" selection-start-column="0" selection-end-line="12" selection-end-column="0" />
+          <folding>
+            <element signature="imports" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/phil/nanodegree/com/popularmovies/MovieDetailFragment.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-3.5671642">
-          <caret line="93" column="16" selection-start-line="93" selection-start-column="16" selection-end-line="93" selection-end-column="16" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="89" column="37" selection-start-line="89" selection-start-column="37" selection-end-line="89" selection-end-column="37" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/phil/nanodegree/com/popularmovies/MainActivityFragment.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="140" column="76" selection-start-line="140" selection-start-column="76" selection-end-line="140" selection-end-column="76" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#7366#7387#0" expanded="true" />
+            <element signature="e#7487#7509#0" expanded="true" />
+            <element signature="e#7610#7634#0" expanded="true" />
+            <element signature="e#14136#14157#0" expanded="true" />
+            <element signature="e#14265#14287#0" expanded="true" />
+            <element signature="e#14397#14421#0" expanded="true" />
+            <element signature="e#14648#14655#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/phil/nanodegree/com/popularmovies/utilities/Utils.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.2445465">
+          <caret line="20" column="107" selection-start-line="20" selection-start-column="107" selection-end-line="20" selection-end-column="107" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>

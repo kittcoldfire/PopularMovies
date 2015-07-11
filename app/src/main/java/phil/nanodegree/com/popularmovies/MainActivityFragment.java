@@ -45,7 +45,7 @@ import phil.nanodegree.com.popularmovies.models.Movie;
  */
 public class MainActivityFragment extends Fragment {
 
-    private ArrayList<Movie> mMpvies;    // GridView items list
+    private ArrayList<Movie> mMovies;    // GridView items list
     private GridMoviePosterAdapter mAdapter;    // GridView adapter
     private GridView mGridView;
     private final String PREF_SORT = "pref_sort"; //0 for popular, 1 highest rated, 2 highest revenue
@@ -55,6 +55,8 @@ public class MainActivityFragment extends Fragment {
     private String mPrefSearchHRated = "vote_average.desc";
     private String mPrefSearchHRevenue = "revenue.desc";
     public String searchParam;
+    private Bundle savedState = null;
+    private boolean mRestored = false;
 
     public MainActivityFragment() {
     }
@@ -90,9 +92,6 @@ public class MainActivityFragment extends Fragment {
             }
         });
 
-        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
-        mPrefSort = sharedPref.getInt(PREF_SORT, 0);
-        searchParam = sharedPref.getString(PREF_SEARCH, mPrefSearchPopular);
         setHasOptionsMenu(true);
 
         mGridView.setOnScrollListener(new AbsListView.OnScrollListener() {
@@ -124,21 +123,76 @@ public class MainActivityFragment extends Fragment {
         mActionBar = ((ActionBarActivity) getActivity()).getSupportActionBar();
         mActionBar.setDisplayHomeAsUpEnabled(false);
 
+        if(mAdapter != null && !mAdapter.isEmpty()) {
+            // Binds the Adapter to the ListView
+            mGridView.setAdapter(mAdapter);
+        }
+
         return fragmentView;
+    }
+
+    //Put in onCreate because if the device is rotated twice while this is in the BackStack onCreateView isn't called for some reason
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+        mPrefSort = sharedPref.getInt(PREF_SORT, 0);
+        searchParam = sharedPref.getString(PREF_SEARCH, mPrefSearchPopular);
+
+        //Handling rotation of device, we retrieve our proper state from the savedInstanceState
+        if(savedInstanceState != null && savedInstanceState.containsKey("movies")) {
+            mMovies = savedInstanceState.getParcelableArrayList("movies");
+            mAdapter = new GridMoviePosterAdapter(getActivity(), mMovies);
+            //savedState = null;
+            mRestored = true;
+        }
+
+        //When navigating back from the back stack, we need to get the info from the Bundle we included
+        if(savedInstanceState != null && savedState == null) {
+            savedState = savedInstanceState.getBundle("movies");
+        }
+        //Only download if we don't already have the data
+        if(savedState != null) {
+            mMovies = savedState.getParcelableArrayList("movies");
+            mAdapter = new GridMoviePosterAdapter(getActivity(), mMovies);
+        } else {
+            if(mRestored == false) {
+                MovieAsyncTask task = new MovieAsyncTask();
+                task.execute();
+            }
+        }
+
+        mRestored = false;
+        savedState = null;
     }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        //Only download if we don't already have the data
-        if(mAdapter == null || mAdapter.isEmpty()) {
-            MovieAsyncTask task = new MovieAsyncTask();
-            task.execute();
-        } else {
-            // Binds the Adapter to the ListView
-            mGridView.setAdapter(mAdapter);
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        savedState = saveState();
+    }
+
+    private Bundle saveState() { /* called either from onDestroyView() or onSaveInstanceState() */
+        Bundle state = new Bundle();
+        state.putParcelableArrayList("movies", mMovies);
+
+        return state;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        if(mMovies != null && !mMovies.isEmpty()) {
+            outState.putBundle("movies", (savedState != null) ? savedState : saveState());
+            outState.putParcelableArrayList("movies", mMovies);
         }
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -314,6 +368,7 @@ public class MainActivityFragment extends Fragment {
 
             // Pass the results into ListViewAdapter.java
             mAdapter = new GridMoviePosterAdapter(getActivity(), movies);
+            mMovies = movies;
             // Binds the Adapter to the ListView
             mGridView.setAdapter(mAdapter);
 

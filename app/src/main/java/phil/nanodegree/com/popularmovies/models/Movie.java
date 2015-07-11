@@ -1,8 +1,11 @@
 package phil.nanodegree.com.popularmovies.models;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.util.ArrayList;
 
-public class Movie {
+public class Movie implements Parcelable {
     private int id;
     private String title;
     private String release_date;
@@ -25,6 +28,31 @@ public class Movie {
         this.overview = overview;
         this.poster_path = poster_path;
         this.vote_average = vote_average;
+    }
+
+    /*
+    private int id;
+    private String title;
+    private String release_date;
+    private String overview;
+    private String poster_path;
+    private double vote_average;
+    private ArrayList<Integer> genres;
+    private int run_time;
+    private String tagline;
+    private String backdrop_path;
+     */
+    public Movie(Parcel in) {
+        id = in.readInt();
+        title = in.readString();
+        release_date = in.readString();
+        overview = in.readString();
+        poster_path = in.readString();
+        vote_average = in.readDouble();
+        genres = (ArrayList<Integer>) in.readSerializable();
+        run_time = in.readInt();
+        tagline = in.readString();
+        backdrop_path = in.readString();
     }
 
     public int getId() { return this.id; }
@@ -100,4 +128,34 @@ public class Movie {
     public String getBackdrop() {
         return this.backdrop_path;
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int flags) {
+        parcel.writeInt(id);
+        parcel.writeString(title);
+        parcel.writeString(release_date);
+        parcel.writeString(overview);
+        parcel.writeString(poster_path);
+        parcel.writeDouble(vote_average);
+        parcel.writeSerializable(genres);
+        parcel.writeString(tagline);
+        parcel.writeString(backdrop_path);
+    }
+
+    public final Parcelable.Creator<Movie> CREATOR = new Parcelable.Creator<Movie>() {
+        @Override
+        public Movie createFromParcel(Parcel parcel) {
+            return new Movie(parcel);
+        }
+
+        @Override
+        public Movie[] newArray(int size) {
+            return new Movie[size];
+        }
+    };
 }
