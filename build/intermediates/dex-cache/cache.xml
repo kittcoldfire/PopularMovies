@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<items version="2" >
+
+    <item
+        jar="C:\Users\Phil\AndroidStudioProjects\PopularMovies\app\build\intermediates\exploded-aar\com.android.support\cardview-v7\21.0.3\jars\classes.jar"
+        jumboMode="false"
+        revision="23.0.0 rc2"
+        sha1="00b0b7233e1ec64acebfac40d4983d32d4712426">
+        <dex dex="C:\Users\Phil\AndroidStudioProjects\PopularMovies\app\build\intermediates\pre-dexed\debug\classes-6884fa28e479a38d741d2f931a9734844d93cd69.jar" />
+    </item>
+    <item
+        jar="C:\Users\Phil\AndroidStudioProjects\PopularMovies\app\build\intermediates\exploded-aar\com.android.support\appcompat-v7\22.2.0\jars\classes.jar"
+        jumboMode="false"
+        revision="23.0.0 rc2"
+        sha1="73753982da6bde518f3a4c6b372749981d14d1a0">
+        <dex dex="C:\Users\Phil\AndroidStudioProjects\PopularMovies\app\build\intermediates\pre-dexed\debug\classes-b56356c0464b0f7479955a4fe9c54ee1000452da.jar" />
+    </item>
+    <item
+        jar="C:\Users\Phil\Documents\Development\Android\adt-bundle-windows-x86_64-20131030\adt-bundle-windows-x86_64-20131030\sdk\extras\android\m2repository\com\android\support\support-annotations\22.2.0\support-annotations-22.2.0.jar"
+        jumboMode="false"
+        revision="23.0.0 rc2"
+        sha1="66b42a1f3eb7676070b7ef7f14b603483aecbee1">
+        <dex dex="C:\Users\Phil\AndroidStudioProjects\PopularMovies\app\build\intermediates\pre-dexed\debug\support-annotations-22.2.0-b8f75b1546c993bd9819badab19e231ee7f7eac0.jar" />
+    </item>
+    <item
+        jar="C:\Users\Phil\AndroidStudioProjects\PopularMovies\app\build\intermediates\exploded-aar\com.android.support\recyclerview-v7\21.0.3\jars\classes.jar"
+        jumboMode="false"
+        revision="23.0.0 rc2"
+        sha1="4b8945fc23a7461c6fdde15753456d64b0a9358b">
+        <dex dex="C:\Users\Phil\AndroidStudioProjects\PopularMovies\app\build\intermediates\pre-dexed\debug\classes-a2fe85833ffcb4146ddbf0b75fb3f3458748bf0b.jar" />
+    </item>
+    <item
+        jar="C:\Users\Phil\.gradle\caches\modules-2\files-2.1\com.squareup.picasso\picasso\2.5.2\7446d06ec8d4f7ffcc53f1da37c95f200dcb9387\picasso-2.5.2.jar"
+        jumboMode="false"
+        revision="23.0.0 rc2"
+        sha1="7446d06ec8d4f7ffcc53f1da37c95f200dcb9387">
+        <dex dex="C:\Users\Phil\AndroidStudioProjects\PopularMovies\app\build\intermediates\pre-dexed\debug\picasso-2.5.2-41e7537d9802372b1c50b77590656283da1fab20.jar" />
+    </item>
+    <item
+        jar="C:\Users\Phil\AndroidStudioProjects\PopularMovies\app\build\intermediates\exploded-aar\com.android.support\support-v4\22.2.0\jars\classes.jar"
+        jumboMode="false"
+        revision="23.0.0 rc2"
+        sha1="1ee588ff2c4daf7b97c1cbf922a6c7f027285c2f">
+        <dex dex="C:\Users\Phil\AndroidStudioProjects\PopularMovies\app\build\intermediates\pre-dexed\debug\classes-72c7dfbbc7df127b6c4b063e27a46b5cb508409f.jar" />
+    </item>
+    <item
+        jar="C:\Users\Phil\AndroidStudioProjects\PopularMovies\app\build\intermediates\exploded-aar\com.android.support\support-v4\22.2.0\jars\libs\internal_impl-22.2.0.jar"
+        jumboMode="false"
+        revision="23.0.0 rc2"
+        sha1="57f2ab85c164ff1676ec64dee787981c046fab79">
+        <dex dex="C:\Users\Phil\AndroidStudioProjects\PopularMovies\app\build\intermediates\pre-dexed\debug\internal_impl-22.2.0-7b534fb4762c8f2418afe34c012cdbc21198511b.jar" />
+    </item>
+
+</items>

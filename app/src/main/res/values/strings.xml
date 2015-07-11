@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">PopularMovies</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="most_popular">Most Popular Movies</string>
+    <string name="highest_rated">Highest Rated Movies</string>
+    <string name="highest_revenue">Highest Revenue Movies</string>
+    <string name="overview">Summary</string>
+    <string name="sort_most_popular">Most Popular</string>
+    <string name="sort_highest_rated">Highest Rated</string>
+    <string name="sort_highest_revenue">Highest Revenue</string>
+</resources>
