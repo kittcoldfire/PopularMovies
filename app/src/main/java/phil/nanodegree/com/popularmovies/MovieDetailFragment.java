@@ -1,6 +1,7 @@
 package phil.nanodegree.com.popularmovies;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -19,7 +20,7 @@ import android.widget.LinearLayout;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
-import com.squareup.picasso.Picasso;
+import com.bumptech.glide.Glide;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -49,7 +50,7 @@ public class MovieDetailFragment extends Fragment {
     public ImageView imgPoster, imgBackdrop;
     public ActionBar mActionBar;
 
-    public LinearLayout linGenre, linDate, linLength;
+    public LinearLayout linGenre, linDate, linLength, linCast, linTrail, linRev;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -77,6 +78,9 @@ public class MovieDetailFragment extends Fragment {
         linDate = (LinearLayout) fragmentView.findViewById(R.id.detail_lin_date);
         linGenre = (LinearLayout) fragmentView.findViewById(R.id.detail_lin_genre);
         linLength = (LinearLayout) fragmentView.findViewById(R.id.detail_lin_duration);
+        linCast = (LinearLayout) fragmentView.findViewById(R.id.detail_lin_cast);
+        linTrail = (LinearLayout) fragmentView.findViewById(R.id.detail_lin_trailers);
+        linRev = (LinearLayout) fragmentView.findViewById(R.id.detail_lin_reviews);
 
         //Has the option menu so it listens for the up caret press
         setHasOptionsMenu(true);
@@ -118,14 +122,88 @@ public class MovieDetailFragment extends Fragment {
                 } else {
                     txtReleaseDate.setText(mMovie.getReleaseDate());
                 }
-                Picasso.with(getActivity()).load(utils.constructMoviePosterURL(mMovie.getPosterPath(), 3)).into(imgPoster);
+                //Picasso.with(getActivity()).load(utils.constructMoviePosterURL(mMovie.getPosterPath(), 3)).into(imgPoster);
+                Glide.with(getActivity()).load(utils.constructMoviePosterURL(mMovie.getPosterPath(), 3)).into(imgPoster);
                 if(mMovie.getBackdrop().equals("") || mMovie.getBackdrop() == null || mMovie.getBackdrop().equals("null")) {
                     imgBackdrop.setVisibility(View.GONE);
                     txtTagline.setVisibility(View.GONE);
                 } else {
-                    Picasso.with(getActivity()).load(utils.constructMoviePosterURL(mMovie.getBackdrop(), 4)).into(imgBackdrop);
+                    //Picasso.with(getActivity()).load(utils.constructMoviePosterURL(mMovie.getBackdrop(), 4)).into(imgBackdrop);
+                    Glide.with(getActivity()).load(utils.constructMoviePosterURL(mMovie.getBackdrop(), 4)).into(imgBackdrop);
                     if(!mMovie.getTagline().equals("")) {
                         txtTagline.setText("\"" + mMovie.getTagline() + "\"");
+                    }
+                }
+                if(mMovie.getCast().isEmpty()) {
+
+                } else {
+                    ArrayList<String[]> cast = mMovie.getCast();
+                    for (int x = 0; x < cast.size(); x++ ) {
+                        View card = getActivity().getLayoutInflater().inflate(R.layout.castcard, null);
+
+                        ImageView img = (ImageView) card.findViewById(R.id.castcard_img);
+                        TextView txtName = (TextView) card.findViewById(R.id.castcard_txt_name);
+                        TextView txtCharacter = (TextView) card.findViewById(R.id.castcard_txt_character);
+
+                        txtName.setText(cast.get(x)[0]);
+                        txtCharacter.setText(cast.get(x)[1]);
+                        //ImageView imageView = new ImageView(getActivity());
+                        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                        lp.setMargins(3, 0, 3, 0);
+                        card.setLayoutParams(lp);
+                        linCast.addView(card);
+                        //Picasso.with(getActivity()).load(utils.constructMoviePosterURL(cast.get(x)[2], 3)).into(img);
+                        Glide.with(getActivity()).load(utils.constructMoviePosterURL(cast.get(x)[2], 3)).centerCrop().into(img);
+                    }
+                }
+
+                if(mMovie.getTrailers().isEmpty()) {
+
+                } else {
+                    final ArrayList<String[]> trailers = mMovie.getTrailers();
+                    for(int p = 0; p < trailers.size(); p++) {
+                        View card = getActivity().getLayoutInflater().inflate(R.layout.trailercard, null);
+
+                        ImageView img = (ImageView) card.findViewById(R.id.trailercard_img);
+                        TextView txtName = (TextView) card.findViewById(R.id.trailercard_txt_name);
+
+                        txtName.setText(trailers.get(p)[0]);
+                        //ImageView imageView = new ImageView(getActivity());
+                        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                        lp.setMargins(10, 0, 10, 0);
+                        card.setLayoutParams(lp);
+                        linTrail.addView(card);
+                        final String videoURL = trailers.get(p)[1];
+                        String trailerPoster = "http://img.youtube.com/vi/" + videoURL + "/0.jpg";
+                        //Picasso.with(getActivity()).load(trailerPoster).into(img);
+                        Glide.with(getActivity()).load(trailerPoster).centerCrop().into(img);
+
+                        card.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.youtube.com/watch?v=" + videoURL)));
+                            }
+                        });
+
+                    }
+                }
+                if(mMovie.getReviews().isEmpty()) {
+
+                } else {
+                    final ArrayList<String[]> reviews = mMovie.getReviews();
+                    for(int r = 0; r < reviews.size(); r++) {
+                        View card = getActivity().getLayoutInflater().inflate(R.layout.reviewcard, null);
+
+                        TextView txtAuthor = (TextView) card.findViewById(R.id.reviewcard_author);
+                        TextView txtContent = (TextView) card.findViewById(R.id.reviewcard_content);
+
+                        txtAuthor.setText(reviews.get(r)[0]);
+                        txtContent.setText(reviews.get(r)[1]);
+
+                        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                        lp.setMargins(10, 0, 10, 0);
+                        card.setLayoutParams(lp);
+                        linRev.addView(card);
                     }
                 }
                 txtRating.setText(mMovie.getVoteAverage() + " / 10");
@@ -200,7 +278,9 @@ public class MovieDetailFragment extends Fragment {
             InputStream stream = null;
             try {
                 //Get our url to make our network request
-                URL url = new URL(builder.build().toString());
+                //add on the append_to_response to get credits, reviews and trailers all in one network request
+                String completeUrl = builder.build().toString() + "&append_to_response=credits,reviews,trailers";
+                URL url = new URL(completeUrl);
 
                 Log.d(LOG_TAG, "The URL is: " + url.toString());
 
@@ -267,16 +347,93 @@ public class MovieDetailFragment extends Fragment {
                 } else {
                     txtReleaseDate.setText(movie.getReleaseDate());
                 }
-                Picasso.with(getActivity()).load(utils.constructMoviePosterURL(movie.getPosterPath(), 3)).into(imgPoster);
+                //Picasso.with(getActivity()).load(utils.constructMoviePosterURL(movie.getPosterPath(), 3)).into(imgPoster);
+                Glide.with(getActivity()).load(utils.constructMoviePosterURL(movie.getPosterPath(), 3)).into(imgPoster);
                 if(movie.getBackdrop().equals("") || movie.getBackdrop() == null || movie.getBackdrop().equals("null")) {
                     imgBackdrop.setVisibility(View.GONE);
                     txtTagline.setVisibility(View.GONE);
                 } else {
-                    Picasso.with(getActivity()).load(utils.constructMoviePosterURL(movie.getBackdrop(), 4)).into(imgBackdrop);
+                    //Picasso.with(getActivity()).load(utils.constructMoviePosterURL(movie.getBackdrop(), 4)).into(imgBackdrop);
+                    Glide.with(getActivity()).load(utils.constructMoviePosterURL(movie.getBackdrop(), 4)).into(imgBackdrop);
                     if(!movie.getTagline().equals("")) {
                         txtTagline.setText("\"" + movie.getTagline() + "\"");
                     }
                 }
+
+                if(movie.getCast().isEmpty()) {
+
+                } else {
+                    ArrayList<String[]> cast = movie.getCast();
+                    for (int x = 0; x < cast.size(); x++ ) {
+                        View card = getActivity().getLayoutInflater().inflate(R.layout.castcard, null);
+
+                        ImageView img = (ImageView) card.findViewById(R.id.castcard_img);
+                        TextView txtName = (TextView) card.findViewById(R.id.castcard_txt_name);
+                        TextView txtCharacter = (TextView) card.findViewById(R.id.castcard_txt_character);
+
+                        txtName.setText(cast.get(x)[0]);
+                        txtCharacter.setText(cast.get(x)[1]);
+                        //ImageView imageView = new ImageView(getActivity());
+                        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                        lp.setMargins(3, 0, 3, 0);
+                        card.setLayoutParams(lp);
+                        linCast.addView(card);
+                        //Picasso.with(getActivity()).load(utils.constructMoviePosterURL(cast.get(x)[2], 3)).into(img);
+                        Glide.with(getActivity()).load(utils.constructMoviePosterURL(cast.get(x)[2], 3)).centerCrop().into(img);
+                    }
+                }
+
+                if(movie.getTrailers().isEmpty()) {
+
+                } else {
+                    final ArrayList<String[]> trailers = movie.getTrailers();
+                    for(int p = 0; p < trailers.size(); p++) {
+                        View card = getActivity().getLayoutInflater().inflate(R.layout.trailercard, null);
+
+                        ImageView img = (ImageView) card.findViewById(R.id.trailercard_img);
+                        TextView txtName = (TextView) card.findViewById(R.id.trailercard_txt_name);
+
+                        txtName.setText(trailers.get(p)[0]);
+                        //ImageView imageView = new ImageView(getActivity());
+                        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                        lp.setMargins(10, 0, 10, 0);
+                        card.setLayoutParams(lp);
+                        linTrail.addView(card);
+                        final String videoURL = trailers.get(p)[1];
+                        String trailerPoster = "http://img.youtube.com/vi/" + videoURL + "/0.jpg";
+                        //Picasso.with(getActivity()).load(trailerPoster).into(img);
+                        Glide.with(getActivity()).load(trailerPoster).centerCrop().into(img);
+
+                        card.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.youtube.com/watch?v=" + videoURL)));
+                            }
+                        });
+
+                    }
+                }
+
+                if(movie.getReviews().isEmpty()) {
+
+                } else {
+                    final ArrayList<String[]> reviews = movie.getReviews();
+                    for(int r = 0; r < reviews.size(); r++) {
+                        View card = getActivity().getLayoutInflater().inflate(R.layout.reviewcard, null);
+
+                        TextView txtAuthor = (TextView) card.findViewById(R.id.reviewcard_author);
+                        TextView txtContent = (TextView) card.findViewById(R.id.reviewcard_content);
+
+                        txtAuthor.setText(reviews.get(r)[0]);
+                        txtContent.setText(reviews.get(r)[1]);
+
+                        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                        lp.setMargins(15, 15, 15, 15);
+                        card.setLayoutParams(lp);
+                        linRev.addView(card);
+                    }
+                }
+
                 txtRating.setText(movie.getVoteAverage() + " / 10");
                 ratingBar.setRating((float) movie.getVoteAverage());
                 txtOverview.setText(movie.getOverview());
@@ -309,6 +466,33 @@ public class MovieDetailFragment extends Fragment {
                     genre_ids.add(Integer.parseInt(jsonGenreObject.getString("id")));
                 }
                 movie.setGenres(genre_ids);
+
+                JSONObject credits = (JSONObject) jsonMovieObject.get("credits");
+                JSONArray cast = (JSONArray) credits.get("cast");
+                ArrayList<String[]> cast_det = new ArrayList<String[]>();
+                for(int p = 0; p < cast.length(); p++) {
+                    JSONObject jsonCastObject = cast.getJSONObject(p);
+                    cast_det.add(new String[] { jsonCastObject.getString("name"), jsonCastObject.getString("character"), jsonCastObject.getString("profile_path") });
+                }
+                movie.setCast(cast_det);
+
+                JSONObject trailers = (JSONObject) jsonMovieObject.get("trailers");
+                JSONArray youtube = (JSONArray) trailers.get("youtube");
+                ArrayList<String[]> trailer_det = new ArrayList<String[]>();
+                for(int v = 0; v < youtube.length(); v++) {
+                    JSONObject jsonTrailerObject = youtube.getJSONObject(v);
+                    trailer_det.add(new String[] { jsonTrailerObject.getString("name"), jsonTrailerObject.getString("source") });
+                }
+                movie.setTrailers(trailer_det);
+
+                JSONObject reviews = (JSONObject) jsonMovieObject.get("reviews");
+                JSONArray results = (JSONArray) reviews.get("results");
+                ArrayList<String[]> reviews_det = new ArrayList<String[]>();
+                for(int r = 0; r < results.length(); r++) {
+                    JSONObject jsonReviewObject = results.getJSONObject(r);
+                    reviews_det.add(new String[] { jsonReviewObject.getString("author"), jsonReviewObject.getString("content") });
+                }
+                movie.setReviews(reviews_det);
 
                 movie.setBackdrop(jsonMovieObject.getString("backdrop_path"));
                 movie.setTagline(jsonMovieObject.getString("tagline"));

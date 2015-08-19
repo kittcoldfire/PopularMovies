@@ -16,6 +16,9 @@ public class Movie implements Parcelable {
     private int run_time;
     private String tagline;
     private String backdrop_path;
+    private ArrayList<String[]> cast; //0 Name, 1 Character, 2 profile pic
+    private ArrayList<String[]> trailers; //0 Name, 1 video link
+    private ArrayList<String[]> reviews; //0 Author, 1 Content
 
     public Movie(int id) {
         this.id = id;
@@ -53,6 +56,9 @@ public class Movie implements Parcelable {
         run_time = in.readInt();
         tagline = in.readString();
         backdrop_path = in.readString();
+        cast = (ArrayList<String[]>) in.readSerializable();
+        trailers = (ArrayList<String[]>) in.readSerializable();
+        reviews = (ArrayList<String[]>) in.readSerializable();
     }
 
     public int getId() { return this.id; }
@@ -129,6 +135,30 @@ public class Movie implements Parcelable {
         return this.backdrop_path;
     }
 
+    public void setCast(ArrayList<String[]> cast) {
+        this.cast = cast;
+    }
+
+    public ArrayList<String[]> getCast() {
+        return cast;
+    }
+
+    public void setTrailers(ArrayList<String[]> trailers) {
+        this.trailers = trailers;
+    }
+
+    public ArrayList<String[]> getTrailers() {
+        return trailers;
+    }
+
+    public void setReviews(ArrayList<String[]> reviews) {
+        this.reviews = reviews;
+    }
+
+    public ArrayList<String[]> getReviews() {
+        return reviews;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -145,6 +175,9 @@ public class Movie implements Parcelable {
         parcel.writeSerializable(genres);
         parcel.writeString(tagline);
         parcel.writeString(backdrop_path);
+        parcel.writeSerializable(cast);
+        parcel.writeSerializable(trailers);
+        parcel.writeSerializable(reviews);
     }
 
     public final Parcelable.Creator<Movie> CREATOR = new Parcelable.Creator<Movie>() {

@@ -43,7 +43,7 @@
                 <ImageView
                     android:id="@+id/detail_img_poster"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="175dp"
                     android:minHeight="150dp"
                     />
             </android.support.v7.widget.CardView>
@@ -176,6 +176,35 @@
                 android:layout_marginBottom="10dp"
                 />
             <TextView
+                android:id="@+id/detail_txt_cast"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cast"
+                style="@style/Base.TextAppearance.AppCompat.Large"
+                />
+            <HorizontalScrollView
+                android:id="@+id/detail_hsv_cast"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="75dp"
+                >
+                <LinearLayout
+                    android:id="@+id/detail_lin_cast"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    >
+
+                </LinearLayout>
+            </HorizontalScrollView>
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/darker_gray"
+                android:layout_marginTop="15dp"
+                android:layout_marginBottom="10dp"
+                />
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/overview"
@@ -192,6 +221,54 @@
                 style="@style/Base.TextAppearance.AppCompat.Medium"
                 android:paddingBottom="30dp"
                 />
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/darker_gray"
+                android:layout_marginTop="15dp"
+                android:layout_marginBottom="10dp" />
+            <TextView
+                android:id="@+id/detail_txt_trailers"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Trailers"
+                style="@style/Base.TextAppearance.AppCompat.Large"
+                />
+            <HorizontalScrollView
+                android:id="@+id/detail_hsv_trailers"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="75dp"
+                >
+                <LinearLayout
+                    android:id="@+id/detail_lin_trailers"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    >
+
+                </LinearLayout>
+            </HorizontalScrollView>
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/darker_gray"
+                android:layout_marginTop="15dp"
+                android:layout_marginBottom="10dp" />
+            <TextView
+                android:id="@+id/detail_txt_refiews"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Reviews"
+                style="@style/Base.TextAppearance.AppCompat.Large"
+                />
+            <LinearLayout
+                android:id="@+id/detail_lin_reviews"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                >
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 </ScrollView>

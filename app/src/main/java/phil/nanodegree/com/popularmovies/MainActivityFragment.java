@@ -308,13 +308,25 @@ public class MainActivityFragment extends Fragment {
             //Build our URL to make our request
             //http://api.themoviedb.org/3/discover/movie?sort_by=popularity.desc&api_key=[YOUR API KEY]
             Uri.Builder builder = new Uri.Builder();
-            builder.scheme("http")
-                    .authority("api.themoviedb.org")
-                    .appendPath("3")
-                    .appendPath("discover")
-                    .appendPath("movie")
-                    .appendQueryParameter("sort_by", searchParam)
-                    .appendQueryParameter("api_key", API_KEY);
+            if(searchParam == mPrefSearchHRated) {
+                builder.scheme("http")
+                        .authority("api.themoviedb.org")
+                        .appendPath("3")
+                        .appendPath("discover")
+                        .appendPath("movie")
+                        .appendQueryParameter("sort_by", searchParam)
+                        .appendQueryParameter("api_key", API_KEY)
+                        .appendQueryParameter("vote_count.gte", "80");
+            } else {
+                builder.scheme("http")
+                        .authority("api.themoviedb.org")
+                        .appendPath("3")
+                        .appendPath("discover")
+                        .appendPath("movie")
+                        .appendQueryParameter("sort_by", searchParam)
+                        .appendQueryParameter("api_key", API_KEY);
+            }
+
 
             InputStream stream = null;
             try {

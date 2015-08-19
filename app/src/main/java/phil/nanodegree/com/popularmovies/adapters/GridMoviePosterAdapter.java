@@ -10,7 +10,7 @@ import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
-import com.squareup.picasso.Picasso;
+import com.bumptech.glide.Glide;
 
 import java.util.ArrayList;
 
@@ -82,7 +82,9 @@ public class GridMoviePosterAdapter extends BaseAdapter {
         //http://image.tmdb.org/t/p/w185//nBNZadXqJSdt05SHLqgT0HuC5Gm.jpg
         Log.d(LOG_TAG, "Image url:" + mMovies.get(position).getPosterPath());
         Log.d(LOG_TAG, "Image path:" + utils.constructMoviePosterURL(mMovies.get(position).getPosterPath(), 3));
-        Picasso.with(mContext).load(utils.constructMoviePosterURL(mMovies.get(position).getPosterPath(), 3)).into(mHolder.imgPoster);
+        //Picasso.with(mContext).setIndicatorsEnabled(true);
+        //Picasso.with(mContext).load(utils.constructMoviePosterURL(mMovies.get(position).getPosterPath(), 3)).into(mHolder.imgPoster);
+        Glide.with(mContext).load(utils.constructMoviePosterURL(mMovies.get(position).getPosterPath(), 3)).into(mHolder.imgPoster);
 
         return v;
     }

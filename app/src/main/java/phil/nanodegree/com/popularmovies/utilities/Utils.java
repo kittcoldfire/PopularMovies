@@ -59,6 +59,55 @@ public class Utils {
         return builder.build().toString();
     }
 
+    /*
+        Popular, Rated, Revenue, Favorite
+        1 - Popular
+        5 - Rated
+        11 - Revenue
+        20 - Favorite
+
+        6 = Popular/Rated
+        12 = Popular/Revenue
+        21 = Popular/Favorite
+        16 = Rated/Revenue
+        25 = Rated/Favourite
+        31 = Revenue/Favorite
+
+        17 = Popular/Rated/Revenue
+        26 = Popular/Rated/Favorite
+        32 = Popular/Revenue/Favorite
+        36 = Rated/Revenue/Favorite
+
+        37 = Popular/Rated/Revenue/Favorite
+     */
+
+    /**
+     * Helper method to return a comma delimited String of all number values that may be stored in the database for sorting
+     * sections of movies.
+     * @param sort - int value of the sort section, 1 - Most Popular, 5 - Highest Rated, 11 - Highest Revenue, 20 - Favourite Movies
+     * @return A string delimited by commas to be used in SQL queries to find movies in each section
+     */
+    public String getSortString(int sort) {
+        String sortString = "";
+
+        switch (sort) {
+            case 1: //Anything with Popular in it
+                sortString = "1, 6, 12, 21, 17, 26, 32, 37";
+                break;
+            case 5: //Anything with Rated in it
+                sortString = "5, 6, 16, 25, 17, 26, 36, 37";
+                break;
+            case 11: //Anything with Revenue in it
+                sortString = "11, 12, 16, 31, 17, 32, 36, 37";
+                break;
+            case 20: //Anything with Favourite in it
+                sortString = "20, 21, 25, 31, 26, 32, 36, 37";
+                break;
+        }
+
+        return sortString;
+    }
+
     /**
      * Helper method to return a comma seperated String of genres based on an ArrayList of genre id's
      * @param g ArrayList<Integer> containing all the genre id's for a specific movie
@@ -139,7 +188,6 @@ public class Utils {
                     break;
             }
         }
-
 
         return genres.toString();
     }
