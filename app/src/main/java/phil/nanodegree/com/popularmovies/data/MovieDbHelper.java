@@ -14,7 +14,7 @@ import static phil.nanodegree.com.popularmovies.data.MovieContract.TrailerEntry;
  */
 public class MovieDbHelper extends SQLiteOpenHelper {
 
-    private static final int DATABASE_VERSION = 4;
+    private static final int DATABASE_VERSION = 8;
 
     static final String DATABASE_NAME = "movies.db";
 

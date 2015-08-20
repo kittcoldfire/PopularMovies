@@ -1,9 +1,20 @@
 package phil.nanodegree.com.popularmovies.utilities;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.Uri;
+import android.preference.PreferenceManager;
 import android.text.format.Time;
 
+import phil.nanodegree.com.popularmovies.R;
+
 public class Utils {
+
+    private static final String PREF_SORT = "pref_sort"; //0 for popular, 1 highest rated, 2 highest revenue
+    private static final String PREF_SEARCH = "pref_search"; //0 for popular, 1 highest rated, 2 highest revenue
+    private static String mPrefSearchPopular = "popularity.desc";
+    private static String mPrefSearchHRated = "vote_average.desc";
+    private static String mPrefSearchHRevenue = "revenue.desc";
 
     public Utils() {
 
@@ -126,6 +137,29 @@ public class Utils {
         return sortString;
     }
 
+    public String[] getSortStringArray(int sort) {
+        String[] sortString;
+
+        switch (sort) {
+            case 1: //Anything with Popular in it
+                sortString = new String[] { "1", "6", "12", "21", "17", "26", "32", "37" };
+                break;
+            case 5: //Anything with Rated in it
+                sortString = new String[] { "5", "6", "16", "25", "17", "26", "36", "37" };
+                break;
+            case 11: //Anything with Revenue in it
+                sortString = new String[] { "11", "12", "16", "31", "17", "32", "36", "37" };
+                break;
+            case 20: //Anything with Favourite in it
+                sortString = new String[] { "20", "21", "25", "31", "26", "32", "36", "37" };
+                break;
+            default:
+                sortString = new String[] {};
+        }
+
+        return sortString;
+    }
+
     /**
      * Helper method to return a comma seperated String of genres based on an ArrayList of genre id's
      * @param strGen String containing all the genre id's for a specific movie in comma delimited string
@@ -210,5 +244,29 @@ public class Utils {
         }
 
         return genres.toString();
+    }
+
+    public static int getSortSection(Context context) {
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+        return sharedPref.getInt(PREF_SORT, 1);
+    }
+
+    public static void setSortSection(Context context, int id) {
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = sharedPref.edit();
+
+        if (id == R.id.action_sort_popular) {
+            editor.putInt(PREF_SORT, 1);
+            editor.putString(PREF_SEARCH, mPrefSearchPopular);
+            editor.commit();
+        } else if(id == R.id.action_sort_highest_rated) {
+            editor.putInt(PREF_SORT, 5);
+            editor.putString(PREF_SEARCH, mPrefSearchHRated);
+            editor.commit();
+        } else if(id == R.id.action_sort_highest_revenue) {
+            editor.putInt(PREF_SORT, 11);
+            editor.putString(PREF_SEARCH, mPrefSearchHRevenue);
+            editor.commit();
+        }
     }
 }

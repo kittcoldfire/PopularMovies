@@ -65,8 +65,10 @@ public class GridMoviePosterCursorAdapter extends CursorAdapter {
         Glide.with(context).load(util.constructMoviePosterURL(imagePath, 3)).into(viewHolder.imageView);
 
         String g = cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_GENRES));
-        String genres = util.getGenres(g);
-        viewHolder.txtGenre.setText(genres);
+        if(!g.isEmpty() && !g.equals("null") && !g.equals("")) {
+            String genres = util.getGenres(g);
+            viewHolder.txtGenre.setText(genres);
+        }
 
         double rating = cursor.getInt(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_VOTE_AVERAGE));
         viewHolder.rtbRating.setRating((float) rating / 2);

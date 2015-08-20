@@ -2,14 +2,17 @@ package phil.nanodegree.com.popularmovies;
 
 import android.app.ProgressDialog;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.text.format.Time;
@@ -40,17 +43,20 @@ import java.net.URL;
 import java.util.ArrayList;
 
 import phil.nanodegree.com.popularmovies.adapters.GridMoviePosterAdapter;
+import phil.nanodegree.com.popularmovies.adapters.GridMoviePosterCursorAdapter;
 import phil.nanodegree.com.popularmovies.data.MovieContract;
 import phil.nanodegree.com.popularmovies.models.Movie;
+import phil.nanodegree.com.popularmovies.utilities.Utils;
 
 
 /**
  * A placeholder fragment containing a simple view.
  */
-public class MainActivityFragment extends Fragment {
+public class MainActivityFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private ArrayList<Movie> mMovies;    // GridView items list
     private GridMoviePosterAdapter mAdapter;    // GridView adapter
+    private GridMoviePosterCursorAdapter mCursorAdapter;
     private GridView mGridView;
     private final String PREF_SORT = "pref_sort"; //0 for popular, 1 highest rated, 2 highest revenue
     private final String PREF_SEARCH = "pref_search"; //0 for popular, 1 highest rated, 2 highest revenue
@@ -61,6 +67,20 @@ public class MainActivityFragment extends Fragment {
     public String searchParam;
     private Bundle savedState = null;
     private boolean mRestored = false;
+
+    private static final int MOVIES_LOADER = 0;
+
+    public Fragment fragment = this;
+
+    private static final String[] MOVIES_COLUMNS = {
+            MovieContract.MovieEntry._ID,
+            MovieContract.MovieEntry.COLUMN_TITLE,
+            MovieContract.MovieEntry.COLUMN_GENRES,
+            MovieContract.MovieEntry.COLUMN_POSTER_PATH,
+            MovieContract.MovieEntry.COLUMN_VOTE_AVERAGE,
+            MovieContract.MovieEntry.COLUMN_SORT,
+            MovieContract.MovieEntry.COLUMN_DATE_ADDED
+    };
 
     public MainActivityFragment() {
     }
@@ -74,25 +94,31 @@ public class MainActivityFragment extends Fragment {
         // initialize the GridView
         mGridView = (GridView) fragmentView.findViewById(R.id.gridview);
 
+        mCursorAdapter = new GridMoviePosterCursorAdapter(getActivity(), null, 0);
+        mGridView.setAdapter(mCursorAdapter);
+
         mGridView.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 FragmentTransaction transaction = getFragmentManager().beginTransaction();
 
-                Movie m = (Movie) mAdapter.getItem(position);
-                int movieId = m.getId();
+                //Movie m = (Movie) mCursorAdapter.getItem(position);
+                Cursor mCursor = mCursorAdapter.getCursor();
+                if(mCursor.moveToPosition(position)) {
+                    int movieId = mCursor.getInt(mCursor.getColumnIndex(MovieContract.MovieEntry._ID));
 
-                Bundle args = new Bundle();
-                args.putInt("movieId", movieId);
+                    Bundle args = new Bundle();
+                    args.putInt("movieId", movieId);
 
-                MovieDetailFragment mdf = new MovieDetailFragment();
-                transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-                transaction.addToBackStack(null);
+                    MovieDetailFragment mdf = new MovieDetailFragment();
+                    transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+                    transaction.addToBackStack(null);
 
-                mdf.setArguments(args);
-                transaction.replace(R.id.content_frame, mdf);
+                    mdf.setArguments(args);
+                    transaction.replace(R.id.content_frame, mdf);
 
-                transaction.commit();
+                    transaction.commit();
+                }
             }
         });
 
@@ -127,10 +153,10 @@ public class MainActivityFragment extends Fragment {
         mActionBar = ((ActionBarActivity) getActivity()).getSupportActionBar();
         mActionBar.setDisplayHomeAsUpEnabled(false);
 
-        if(mAdapter != null && !mAdapter.isEmpty()) {
-            // Binds the Adapter to the ListView
-            mGridView.setAdapter(mAdapter);
-        }
+//        if(mAdapter != null && !mAdapter.isEmpty()) {
+//            // Binds the Adapter to the ListView
+//            mGridView.setAdapter(mAdapter);
+//        }
 
         return fragmentView;
     }
@@ -140,14 +166,15 @@ public class MainActivityFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
-        mPrefSort = sharedPref.getInt(PREF_SORT, 0);
+        mPrefSort = Utils.getSortSection(getActivity());
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
         searchParam = sharedPref.getString(PREF_SEARCH, mPrefSearchPopular);
 
         //Handling rotation of device, we retrieve our proper state from the savedInstanceState
         if(savedInstanceState != null && savedInstanceState.containsKey("movies")) {
             mMovies = savedInstanceState.getParcelableArrayList("movies");
-            mAdapter = new GridMoviePosterAdapter(getActivity(), mMovies);
+            mCursorAdapter = new GridMoviePosterCursorAdapter(getActivity(), null, 0);
+            //mAdapter = new GridMoviePosterAdapter(getActivity(), mMovies);
             //savedState = null;
             mRestored = true;
         }
@@ -159,7 +186,8 @@ public class MainActivityFragment extends Fragment {
         //Only download if we don't already have the data
         if(savedState != null) {
             mMovies = savedState.getParcelableArrayList("movies");
-            mAdapter = new GridMoviePosterAdapter(getActivity(), mMovies);
+            mCursorAdapter = new GridMoviePosterCursorAdapter(getActivity(), null, 0);
+            //mAdapter = new GridMoviePosterAdapter(getActivity(), mMovies);
         } else {
             if(mRestored == false) {
                 MovieAsyncTask task = new MovieAsyncTask();
@@ -173,8 +201,8 @@ public class MainActivityFragment extends Fragment {
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
+        getLoaderManager().initLoader(MOVIES_LOADER, null, this);
         super.onActivityCreated(savedInstanceState);
-
     }
 
     @Override
@@ -224,8 +252,7 @@ public class MainActivityFragment extends Fragment {
     public void onPrepareOptionsMenu(Menu menu) {
         super.onPrepareOptionsMenu(menu);
 
-        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
-        mPrefSort = sharedPref.getInt(PREF_SORT, 0);
+        mPrefSort = Utils.getSortSection(getActivity());
 
         MenuItem sort_hr = menu.findItem(R.id.action_sort_highest_rated);
         MenuItem sort_p = menu.findItem(R.id.action_sort_popular);
@@ -251,32 +278,22 @@ public class MainActivityFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
+        Utils.setSortSection(getActivity(), id);
 
         if (id == R.id.action_sort_popular) {
-            editor.putInt(PREF_SORT, 1);
-            editor.putString(PREF_SEARCH, mPrefSearchPopular);
             searchParam = mPrefSearchPopular;
-            editor.commit();
             mPrefSort = 1;
             MovieAsyncTask task = new MovieAsyncTask();
             task.execute();
             return true;
         } else if(id == R.id.action_sort_highest_rated) {
-            editor.putInt(PREF_SORT, 5);
-            editor.putString(PREF_SEARCH, mPrefSearchHRated);
             searchParam = mPrefSearchHRated;
-            editor.commit();
             mPrefSort = 5;
             MovieAsyncTask task = new MovieAsyncTask();
             task.execute();
             return true;
         } else if(id == R.id.action_sort_highest_revenue) {
-            editor.putInt(PREF_SORT, 11);
-            editor.putString(PREF_SEARCH, mPrefSearchHRevenue);
             searchParam = mPrefSearchHRevenue;
-            editor.commit();
             mPrefSort = 11;
             MovieAsyncTask task = new MovieAsyncTask();
             task.execute();
@@ -285,6 +302,39 @@ public class MainActivityFragment extends Fragment {
 
 
         return super.onOptionsItemSelected(item);
+    }
+
+    // since we read the sort section when we create the loader, all we need to do is restart things
+    void onSortChanged( ) {
+        getLoaderManager().restartLoader(MOVIES_LOADER, null, this);
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
+        // This is called when a new Loader needs to be created.  This
+        // fragment only uses one loader, so we don't care about checking the id.
+
+        String sortOrder = null;
+
+        int sortSection = Utils.getSortSection(getActivity());
+        Uri moviesSortedUri = MovieContract.MovieEntry.buildMoviesSorted(sortSection);
+
+        return new CursorLoader(getActivity(),
+                moviesSortedUri,
+                MOVIES_COLUMNS,
+                null,
+                null,
+                sortOrder);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        mCursorAdapter.swapCursor(data);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        mCursorAdapter.swapCursor(null);
     }
 
     public class MovieAsyncTask extends AsyncTask<Void, Void, ArrayList<Movie>> {
@@ -383,10 +433,10 @@ public class MainActivityFragment extends Fragment {
             super.onPostExecute(movies);
 
             // Pass the results into ListViewAdapter.java
-            mAdapter = new GridMoviePosterAdapter(getActivity(), movies);
+            //mAdapter = new GridMoviePosterAdapter(getActivity(), movies);
             mMovies = movies;
             // Binds the Adapter to the ListView
-            mGridView.setAdapter(mAdapter);
+            //mGridView.setAdapter(mAdapter);
 
             ActionBar mActionBar = ((ActionBarActivity) getActivity()).getSupportActionBar();
 
@@ -400,6 +450,7 @@ public class MainActivityFragment extends Fragment {
             }
 
             mProgressDialog.dismiss();
+            onSortChanged();
         }
 
         private ArrayList<Movie> parseJson(String stream) {
@@ -454,7 +505,7 @@ public class MainActivityFragment extends Fragment {
                         cv.put(MovieContract.MovieEntry.COLUMN_OVERVIEW, movie.getOverview());
                         cv.put(MovieContract.MovieEntry.COLUMN_POSTER_PATH, movie.getPosterPath());
                         cv.put(MovieContract.MovieEntry.COLUMN_VOTE_AVERAGE, movie.getVoteAverage());
-                        cv.put(MovieContract.MovieEntry.COLUMN_SORT, mPrefSort);
+                        cv.put(MovieContract.MovieEntry.COLUMN_SORT, Utils.getSortSection(getActivity()));
                         cv.put(MovieContract.MovieEntry.COLUMN_DATE_ADDED, Long.toString(dayTime.setJulianDay(julianStartDay)));
 
                         getActivity().getContentResolver().insert(MovieContract.MovieEntry.CONTENT_URI,cv);

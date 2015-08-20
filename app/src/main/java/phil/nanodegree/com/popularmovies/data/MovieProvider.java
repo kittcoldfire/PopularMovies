@@ -291,13 +291,15 @@ public class MovieProvider extends ContentProvider {
     private Cursor getMoviesBySortOrder (Uri uri, String[] projection, String sortOrder) {
         int sort = MovieContract.MovieEntry.getSortFromUri(uri);
         Utils utils = new Utils();
-        String sortString = utils.getSortString(sort);
+        String numQuest = MovieContract.MovieEntry.TABLE_NAME +
+                "." + MovieContract.MovieEntry.COLUMN_SORT + " IN (?, ?, ?, ?, ?, ?, ?, ?)";
+        String[] sortString = utils.getSortStringArray(sort);
 
         return (mOpenHelper.getReadableDatabase().query(
                 MovieContract.MovieEntry.TABLE_NAME,
                 projection, //columns/all
-                sMovieSortSelection, //selection query (by sort #)
-                new String[] {"(" + sortString + ")"}, //sort value
+                numQuest, //selection query (by sort #)
+                sortString, //sort value
                 null, //group by
                 null, //having
                 sortOrder //sort order
