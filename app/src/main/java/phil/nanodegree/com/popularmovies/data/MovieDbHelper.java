@@ -5,7 +5,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import static phil.nanodegree.com.popularmovies.data.MovieContract.CastEntry;
-import static phil.nanodegree.com.popularmovies.data.MovieContract.GenreEntry;
 import static phil.nanodegree.com.popularmovies.data.MovieContract.MovieEntry;
 import static phil.nanodegree.com.popularmovies.data.MovieContract.ReviewEntry;
 import static phil.nanodegree.com.popularmovies.data.MovieContract.TrailerEntry;
@@ -15,7 +14,7 @@ import static phil.nanodegree.com.popularmovies.data.MovieContract.TrailerEntry;
  */
 public class MovieDbHelper extends SQLiteOpenHelper {
 
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 4;
 
     static final String DATABASE_NAME = "movies.db";
 
@@ -33,6 +32,7 @@ public class MovieDbHelper extends SQLiteOpenHelper {
                 MovieEntry.COLUMN_RELEASE_DATE + " REAL NOT NULL," +
                 MovieEntry.COLUMN_OVERVIEW + " TEXT," +
                 MovieEntry.COLUMN_POSTER_PATH + " TEXT," +
+                MovieEntry.COLUMN_GENRES + " TEXT," +
                 MovieEntry.COLUMN_VOTE_AVERAGE + " REAL," +
                 MovieEntry.COLUMN_BACKDROP_PATH + " TEXT," +
                 MovieEntry.COLUMN_TAGLINE + " TEXT," +
@@ -41,20 +41,15 @@ public class MovieDbHelper extends SQLiteOpenHelper {
                 MovieEntry.COLUMN_DATE_ADDED + " REAL NOT NULL);"
                 ;
 
-        final String SQL_CREATE_GENRES_TABLE = "CREATE TABLE " + GenreEntry.TABLE_NAME + " (" +
-                GenreEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-                GenreEntry.COLUMN_GENRE_ID + " INTEGER NOT NULL, " +
-                GenreEntry.COLUMN_MOVIE_ID + " INTEGER NOT NULL, " +
-                GenreEntry.COLUMN_DATE_ADDED + " REAL NOT NULL);"
-                ;
 
         final String SQL_CREATE_CAST_TABLE = "CREATE TABLE " + CastEntry.TABLE_NAME + " (" +
                 CastEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
                 CastEntry.COLUMN_CAST_ID + " INTEGER NOT NULL, " +
                 CastEntry.COLUMN_MOVIE_ID + " INTEGER NOT NULL, " +
                 CastEntry.COLUMN_NAME + " TEXT NOT NULL, " +
-                CastEntry.COLUMN_CHARACTER + " TEXT NOT NULL, " +
+                CastEntry.COLUMN_CHARACTER + " TEXT, " +
                 CastEntry.COLUMN_PROFILE_PATH + " TEXT, " +
+                CastEntry.COLUMN_ORDER + " INTEGER, " +
                 CastEntry.COLUMN_DATE_ADDED + " REAL NOT NULL);"
                 ;
 
@@ -77,7 +72,6 @@ public class MovieDbHelper extends SQLiteOpenHelper {
                 ;
 
         db.execSQL(SQL_CREATE_MOVIES_TABLE);
-        db.execSQL(SQL_CREATE_GENRES_TABLE);
         db.execSQL(SQL_CREATE_CAST_TABLE);
         db.execSQL(SQL_CREATE_TRAILER_TABLE);
         db.execSQL(SQL_CREATE_REVIEWS_TABLE);
@@ -95,7 +89,6 @@ public class MovieDbHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + ReviewEntry.TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + TrailerEntry.TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + CastEntry.TABLE_NAME);
-        db.execSQL("DROP TABLE IF EXISTS " + GenreEntry.TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + MovieEntry.TABLE_NAME);
         onCreate(db);
     }

@@ -8,4 +8,6 @@
     <string name="sort_most_popular">Most Popular</string>
     <string name="sort_highest_rated">Highest Rated</string>
     <string name="sort_highest_revenue">Highest Revenue</string>
+
+    <string name="content_authority">phil.nanodegree.com.popularmovies</string>
 </resources>

@@ -1,13 +1,16 @@
 package phil.nanodegree.com.popularmovies;
 
 import android.app.ProgressDialog;
+import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.text.format.Time;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -36,6 +39,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 
+import phil.nanodegree.com.popularmovies.data.MovieContract;
 import phil.nanodegree.com.popularmovies.models.Movie;
 import phil.nanodegree.com.popularmovies.utilities.Utils;
 
@@ -145,15 +149,21 @@ public class MovieDetailFragment extends Fragment {
                         TextView txtName = (TextView) card.findViewById(R.id.castcard_txt_name);
                         TextView txtCharacter = (TextView) card.findViewById(R.id.castcard_txt_character);
 
-                        txtName.setText(cast.get(x)[0]);
-                        txtCharacter.setText(cast.get(x)[1]);
+                        txtName.setText(cast.get(x)[1]);
+                        txtCharacter.setText(cast.get(x)[2]);
                         //ImageView imageView = new ImageView(getActivity());
                         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
                         lp.setMargins(3, 0, 3, 0);
                         card.setLayoutParams(lp);
                         linCast.addView(card);
                         //Picasso.with(getActivity()).load(utils.constructMoviePosterURL(cast.get(x)[2], 3)).into(img);
-                        Glide.with(getActivity()).load(utils.constructMoviePosterURL(cast.get(x)[2], 3)).centerCrop().into(img);
+                        String sil = cast.get(x)[3];
+                        if(sil.isEmpty() || sil.equals("null")) {
+                            Glide.with(getActivity()).load(R.drawable.silhouette).centerCrop().into(img);
+                        } else {
+                            Glide.with(getActivity()).load(utils.constructMoviePosterURL(cast.get(x)[3], 3)).centerCrop().into(img);
+                        }
+
                     }
                 }
 
@@ -371,15 +381,20 @@ public class MovieDetailFragment extends Fragment {
                         TextView txtName = (TextView) card.findViewById(R.id.castcard_txt_name);
                         TextView txtCharacter = (TextView) card.findViewById(R.id.castcard_txt_character);
 
-                        txtName.setText(cast.get(x)[0]);
-                        txtCharacter.setText(cast.get(x)[1]);
+                        txtName.setText(cast.get(x)[1]);
+                        txtCharacter.setText(cast.get(x)[2]);
                         //ImageView imageView = new ImageView(getActivity());
                         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
                         lp.setMargins(3, 0, 3, 0);
                         card.setLayoutParams(lp);
                         linCast.addView(card);
                         //Picasso.with(getActivity()).load(utils.constructMoviePosterURL(cast.get(x)[2], 3)).into(img);
-                        Glide.with(getActivity()).load(utils.constructMoviePosterURL(cast.get(x)[2], 3)).centerCrop().into(img);
+                        String sil = cast.get(x)[3];
+                        if(sil.isEmpty() || sil.equals("null")) {
+                            Glide.with(getActivity()).load(R.drawable.silhouette).centerCrop().into(img);
+                        } else {
+                            Glide.with(getActivity()).load(utils.constructMoviePosterURL(cast.get(x)[3], 3)).centerCrop().into(img);
+                        }
                     }
                 }
 
@@ -460,19 +475,51 @@ public class MovieDetailFragment extends Fragment {
                 );
 
                 JSONArray genres = (JSONArray) jsonMovieObject.get("genres");
-                ArrayList<Integer> genre_ids = new ArrayList<Integer>();
+                StringBuilder genre_ids = new StringBuilder();
                 for (int x = 0; x < genres.length(); x++) {
                     JSONObject jsonGenreObject = genres.getJSONObject(x);
-                    genre_ids.add(Integer.parseInt(jsonGenreObject.getString("id")));
+                    genre_ids.append(Integer.parseInt(jsonGenreObject.getString("id")) + "");
+                    if(x < (genres.length() - 1)) {
+                        genre_ids.append(",");
+                    }
                 }
-                movie.setGenres(genre_ids);
+                movie.setGenres(genre_ids.toString());
 
                 JSONObject credits = (JSONObject) jsonMovieObject.get("credits");
                 JSONArray cast = (JSONArray) credits.get("cast");
                 ArrayList<String[]> cast_det = new ArrayList<String[]>();
                 for(int p = 0; p < cast.length(); p++) {
                     JSONObject jsonCastObject = cast.getJSONObject(p);
-                    cast_det.add(new String[] { jsonCastObject.getString("name"), jsonCastObject.getString("character"), jsonCastObject.getString("profile_path") });
+                    cast_det.add(new String[] { jsonCastObject.getString("cast_id"), jsonCastObject.getString("name"), jsonCastObject.getString("character"),
+                            jsonCastObject.getString("profile_path"), jsonCastObject.getString("order") });
+
+                    Cursor curCast = getActivity().getContentResolver().query(MovieContract.CastEntry.buildCastUri(movie.getId(), Integer.parseInt(cast_det.get(p)[0])), null,
+                            null, null, MovieContract.CastEntry.COLUMN_ORDER + " ASC");
+
+                    if(curCast.moveToFirst()) {
+
+                    } else {
+                        Time dayTime = new Time();
+                        dayTime.setToNow();
+
+                        // we start at the day returned by local time. Otherwise this is a mess.
+                        int julianStartDay = Time.getJulianDay(System.currentTimeMillis(), dayTime.gmtoff);
+
+                        // now we work exclusively in UTC
+                        dayTime = new Time();
+
+                        ContentValues cv = new ContentValues();
+                        cv.put(MovieContract.CastEntry.COLUMN_MOVIE_ID, movie.getId());
+                        cv.put(MovieContract.CastEntry.COLUMN_CAST_ID, cast_det.get(p)[0]);
+                        cv.put(MovieContract.CastEntry.COLUMN_NAME, cast_det.get(p)[1]);
+                        cv.put(MovieContract.CastEntry.COLUMN_CHARACTER, cast_det.get(p)[2]);
+                        cv.put(MovieContract.CastEntry.COLUMN_PROFILE_PATH, cast_det.get(p)[3]);
+                        cv.put(MovieContract.CastEntry.COLUMN_ORDER, cast_det.get(p)[4]);
+                        cv.put(MovieContract.CastEntry.COLUMN_DATE_ADDED, Long.toString(dayTime.setJulianDay(julianStartDay)));
+
+                        getActivity().getContentResolver().insert(MovieContract.CastEntry.buildCastUri(movie.getId(), Integer.parseInt(cast_det.get(p)[0])), cv);
+                    }
+
                 }
                 movie.setCast(cast_det);
 

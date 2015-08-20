@@ -1,8 +1,10 @@
 package phil.nanodegree.com.popularmovies;
 
 import android.app.ProgressDialog;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -10,6 +12,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.text.format.Time;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -37,6 +40,7 @@ import java.net.URL;
 import java.util.ArrayList;
 
 import phil.nanodegree.com.popularmovies.adapters.GridMoviePosterAdapter;
+import phil.nanodegree.com.popularmovies.data.MovieContract;
 import phil.nanodegree.com.popularmovies.models.Movie;
 
 
@@ -200,11 +204,11 @@ public class MainActivityFragment extends Fragment {
         super.onResume();
 
         ActionBar mActionBar = ((ActionBarActivity) getActivity()).getSupportActionBar();
-        if(mPrefSort == 0) {
+        if(mPrefSort == 1) {
             mActionBar.setTitle(R.string.most_popular);
-        } else if (mPrefSort == 1) { //highest rated if selected
+        } else if (mPrefSort == 5) { //highest rated if selected
             mActionBar.setTitle(R.string.highest_rated);
-        } else if(mPrefSort == 2) { //highest revenue if selected
+        } else if(mPrefSort == 11) { //highest revenue if selected
             mActionBar.setTitle(R.string.highest_revenue);
         }
     }
@@ -228,15 +232,15 @@ public class MainActivityFragment extends Fragment {
         MenuItem sort_rev = menu.findItem(R.id.action_sort_highest_revenue);
 
         //Popular by default, so only show highest rated
-        if(mPrefSort == 0) {
+        if(mPrefSort == 1) {
             sort_p.setVisible(false);
             sort_rev.setVisible(true);
             sort_hr.setVisible(true);
-        } else if (mPrefSort == 1) { //highest rated if selected
+        } else if (mPrefSort == 5) { //highest rated if selected
             sort_p.setVisible(true);
             sort_rev.setVisible(true);
             sort_hr.setVisible(false);
-        } else if (mPrefSort == 2) { //highest revenue if selected
+        } else if (mPrefSort == 11) { //highest revenue if selected
             sort_p.setVisible(true);
             sort_hr.setVisible(true);
             sort_rev.setVisible(false);
@@ -251,29 +255,29 @@ public class MainActivityFragment extends Fragment {
         SharedPreferences.Editor editor = sharedPref.edit();
 
         if (id == R.id.action_sort_popular) {
-            editor.putInt(PREF_SORT, 0);
+            editor.putInt(PREF_SORT, 1);
             editor.putString(PREF_SEARCH, mPrefSearchPopular);
             searchParam = mPrefSearchPopular;
-            editor.commit();
-            mPrefSort = 0;
-            MovieAsyncTask task = new MovieAsyncTask();
-            task.execute();
-            return true;
-        } else if(id == R.id.action_sort_highest_rated) {
-            editor.putInt(PREF_SORT, 1);
-            editor.putString(PREF_SEARCH, mPrefSearchHRated);
-            searchParam = mPrefSearchHRated;
             editor.commit();
             mPrefSort = 1;
             MovieAsyncTask task = new MovieAsyncTask();
             task.execute();
             return true;
+        } else if(id == R.id.action_sort_highest_rated) {
+            editor.putInt(PREF_SORT, 5);
+            editor.putString(PREF_SEARCH, mPrefSearchHRated);
+            searchParam = mPrefSearchHRated;
+            editor.commit();
+            mPrefSort = 5;
+            MovieAsyncTask task = new MovieAsyncTask();
+            task.execute();
+            return true;
         } else if(id == R.id.action_sort_highest_revenue) {
-            editor.putInt(PREF_SORT, 2);
+            editor.putInt(PREF_SORT, 11);
             editor.putString(PREF_SEARCH, mPrefSearchHRevenue);
             searchParam = mPrefSearchHRevenue;
             editor.commit();
-            mPrefSort = 2;
+            mPrefSort = 11;
             MovieAsyncTask task = new MovieAsyncTask();
             task.execute();
             return true;
@@ -387,11 +391,11 @@ public class MainActivityFragment extends Fragment {
             ActionBar mActionBar = ((ActionBarActivity) getActivity()).getSupportActionBar();
 
             //Popular by default, so only show highest rated
-            if(mPrefSort == 0) {
+            if(mPrefSort == 1) {
                 mActionBar.setTitle(R.string.most_popular);
-            } else if (mPrefSort == 1) { //highest rated if selected
+            } else if (mPrefSort == 5) { //highest rated if selected
                 mActionBar.setTitle(R.string.highest_rated);
-            } else if (mPrefSort == 2) { //highest revenue if selected
+            } else if (mPrefSort == 11) { //highest revenue if selected
                 mActionBar.setTitle(R.string.highest_revenue);
             }
 
@@ -417,13 +421,44 @@ public class MainActivityFragment extends Fragment {
                     );
 
                     JSONArray genres = (JSONArray) jsonMovieObject.get("genre_ids");
+                    StringBuilder strGenre = new StringBuilder();
                     ArrayList<Integer> genre_ids = new ArrayList<Integer>();
                     for (int x = 0; x < genres.length(); x++) {
                         genre_ids.add(genres.getInt(x));
+                        strGenre.append(genres.getInt(x) + "");
+                        if(x < (genres.length() - 1)) {
+                            strGenre.append(",");
+                        }
                     }
-                    movie.setGenres(genre_ids);
+                    movie.setGenres(strGenre.toString());
                     results.add(movie);
                     Log.d(LOG_TAG, "Added movie: " + movie.getTitle());
+                    Cursor curMov = getActivity().getContentResolver().query(MovieContract.MovieEntry.buildMovieUri(0, movie.getId()), null, null, null, null);
+                    if(curMov.moveToFirst()) {
+
+                    } else {
+                        Time dayTime = new Time();
+                        dayTime.setToNow();
+
+                        // we start at the day returned by local time. Otherwise this is a mess.
+                        int julianStartDay = Time.getJulianDay(System.currentTimeMillis(), dayTime.gmtoff);
+
+                        // now we work exclusively in UTC
+                        dayTime = new Time();
+
+                        ContentValues cv = new ContentValues();
+                        cv.put(MovieContract.MovieEntry._ID, movie.getId());
+                        cv.put(MovieContract.MovieEntry.COLUMN_TITLE, movie.getTitle());
+                        cv.put(MovieContract.MovieEntry.COLUMN_GENRES, strGenre.toString());
+                        cv.put(MovieContract.MovieEntry.COLUMN_RELEASE_DATE, movie.getReleaseDate());
+                        cv.put(MovieContract.MovieEntry.COLUMN_OVERVIEW, movie.getOverview());
+                        cv.put(MovieContract.MovieEntry.COLUMN_POSTER_PATH, movie.getPosterPath());
+                        cv.put(MovieContract.MovieEntry.COLUMN_VOTE_AVERAGE, movie.getVoteAverage());
+                        cv.put(MovieContract.MovieEntry.COLUMN_SORT, mPrefSort);
+                        cv.put(MovieContract.MovieEntry.COLUMN_DATE_ADDED, Long.toString(dayTime.setJulianDay(julianStartDay)));
+
+                        getActivity().getContentResolver().insert(MovieContract.MovieEntry.CONTENT_URI,cv);
+                    }
                 }
             } catch (JSONException e) {
                 System.err.println(e);

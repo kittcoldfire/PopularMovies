@@ -11,13 +11,11 @@ import android.text.format.Time;
  */
 public class MovieContract {
 
-    public static final String CONTENT_AUTHORITY = "com.nanodegree.phil.popularmovies";
+    public static final String CONTENT_AUTHORITY = "phil.nanodegree.com.popularmovies";
 
     public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
 
     public static final String PATH_MOVIES = "movies";
-
-    public static final String PATH_GENRES = "genres";
 
     public static final String PATH_CAST = "cast";
 
@@ -35,18 +33,10 @@ public class MovieContract {
         return time.setJulianDay(julianDay);
     }
 
-    public static final class GenreEntry implements BaseColumns {
-        public static final String TABLE_NAME = "genres";
-
-        // Date, stored as long in milliseconds since the epoch
-        public static final String COLUMN_DATE_ADDED = "date_added";
-
-        public static final String COLUMN_GENRE_ID = "genre_id";
-
-        public static final String COLUMN_MOVIE_ID = MovieEntry._ID;
-    }
-
     public static final class CastEntry implements BaseColumns {
+        public static final Uri CONTENT_URI =
+                BASE_CONTENT_URI.buildUpon().appendPath(PATH_CAST).build();
+
         public static final String TABLE_NAME = "cast";
 
         // Date, stored as long in milliseconds since the epoch
@@ -54,13 +44,28 @@ public class MovieContract {
 
         public static final String COLUMN_CAST_ID = "cast_id";
 
-        public static final String COLUMN_MOVIE_ID = MovieEntry._ID;
+        public static final String COLUMN_MOVIE_ID = "movie_id";
 
         public static final String COLUMN_NAME = "name";
 
         public static final String COLUMN_CHARACTER = "character";
 
         public static final String COLUMN_PROFILE_PATH = "profile_path";
+
+        public static final String COLUMN_ORDER = "cast_order";
+
+        public static Uri buildCastUri(int movie, long castid) {
+            Uri uri = CONTENT_URI.buildUpon().appendPath(movie + "").build(); //only add movie value
+            return ContentUris.withAppendedId(uri, castid); //id at the end after movie
+        }
+
+        public static int getMovieIdFromUri(Uri uri) {
+            return Integer.parseInt(uri.getPathSegments().get(1));
+        }
+
+        public static int getCastIdFromUri(Uri uri) {
+            return Integer.parseInt(uri.getPathSegments().get(2));
+        }
     }
 
     public static final class TrailerEntry implements BaseColumns {
@@ -71,11 +76,27 @@ public class MovieContract {
 
         public static final String COLUMN_TRAILER_ID = "trailer_id";
 
-        public static final String COLUMN_MOVIE_ID = MovieEntry._ID;
+        public static final String COLUMN_MOVIE_ID = "movie_id";
 
         public static final String COLUMN_NAME = "name";
 
         public static final String COLUMN_SOURCE = "source";
+
+        public static final Uri CONTENT_URI =
+                BASE_CONTENT_URI.buildUpon().appendPath(PATH_TRAILERS).build();
+
+        public static Uri buildTrailerUri(int movie, long trailerId) {
+            Uri uri = CONTENT_URI.buildUpon().appendPath(movie + "").build(); //only add movie value
+            return ContentUris.withAppendedId(uri, trailerId); //id at the end after movie
+        }
+
+        public static int getMovieIdFromUri(Uri uri) {
+            return Integer.parseInt(uri.getPathSegments().get(1));
+        }
+
+        public static int getTrailerIdFromUri(Uri uri) {
+            return Integer.parseInt(uri.getPathSegments().get(2));
+        }
     }
 
     public static final class ReviewEntry implements BaseColumns {
@@ -86,11 +107,27 @@ public class MovieContract {
 
         public static final String COLUMN_REVIEW_ID = "review_id";
 
-        public static final String COLUMN_MOVIE_ID = MovieEntry._ID;
+        public static final String COLUMN_MOVIE_ID = "movie_id";
 
         public static final String COLUMN_AUTHOR = "author";
 
         public static final String COLUMN_CONTENT = "content";
+
+        public static final Uri CONTENT_URI =
+                BASE_CONTENT_URI.buildUpon().appendPath(PATH_REVIEWS).build();
+
+        public static Uri buildReviewUri(int movie, long reviewId) {
+            Uri uri = CONTENT_URI.buildUpon().appendPath(movie + "").build(); //only add movie value
+            return ContentUris.withAppendedId(uri, reviewId); //id at the end after movie
+        }
+
+        public static int getMovieIdFromUri(Uri uri) {
+            return Integer.parseInt(uri.getPathSegments().get(1));
+        }
+
+        public static int getReviewIdFromUri(Uri uri) {
+            return Integer.parseInt(uri.getPathSegments().get(2));
+        }
     }
 
     /* Inner class that defines the table contents of the weather table */
@@ -112,6 +149,7 @@ public class MovieContract {
         public static final String COLUMN_VOTE_AVERAGE = "vote_average";
 
         //Need to figure out genres
+        public static final String COLUMN_GENRES = "genres";
 
         public static final String COLUMN_TAGLINE = "tagline";
 

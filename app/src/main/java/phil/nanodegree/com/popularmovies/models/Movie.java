@@ -12,7 +12,7 @@ public class Movie implements Parcelable {
     private String overview;
     private String poster_path;
     private double vote_average;
-    private ArrayList<Integer> genres;
+    private String genres; //Comma delimted list of genre id's
     private int run_time;
     private String tagline;
     private String backdrop_path;
@@ -52,7 +52,7 @@ public class Movie implements Parcelable {
         overview = in.readString();
         poster_path = in.readString();
         vote_average = in.readDouble();
-        genres = (ArrayList<Integer>) in.readSerializable();
+        genres = in.readString();
         run_time = in.readInt();
         tagline = in.readString();
         backdrop_path = in.readString();
@@ -103,11 +103,11 @@ public class Movie implements Parcelable {
         return this.vote_average;
     }
 
-    public void setGenres(ArrayList<Integer> genres) {
+    public void setGenres(String genres) {
         this.genres = genres;
     }
 
-    public ArrayList<Integer> getGenres() {
+    public String getGenres() {
          return genres;
      }
 
@@ -172,7 +172,7 @@ public class Movie implements Parcelable {
         parcel.writeString(overview);
         parcel.writeString(poster_path);
         parcel.writeDouble(vote_average);
-        parcel.writeSerializable(genres);
+        parcel.writeString(genres);
         parcel.writeString(tagline);
         parcel.writeString(backdrop_path);
         parcel.writeSerializable(cast);

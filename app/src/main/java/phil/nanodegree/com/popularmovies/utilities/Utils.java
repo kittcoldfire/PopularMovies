@@ -1,13 +1,29 @@
 package phil.nanodegree.com.popularmovies.utilities;
 
 import android.net.Uri;
-
-import java.util.ArrayList;
+import android.text.format.Time;
 
 public class Utils {
 
     public Utils() {
 
+    }
+
+    public boolean checkIfDatesAreFresh(long date) {
+        Time dayTime = new Time();
+        dayTime.setToNow();
+
+        // we start at the day returned by local time. Otherwise this is a mess.
+        int julianStartDay = Time.getJulianDay(System.currentTimeMillis(), dayTime.gmtoff);
+
+        // now we work exclusively in UTC
+        dayTime = new Time();
+
+        if (date <= dayTime.setJulianDay(julianStartDay - 1)) {
+            return false;
+        } else {
+            return true;
+        }
     }
 
     /**
@@ -17,8 +33,10 @@ public class Utils {
      * @return The URL as a String to be downloaded
      */
     public String constructMoviePosterURL(String url, int imageSize) {
-        //http://image.tmdb.org/t/p/w185//nBNZadXqJSdt05SHLqgT0HuC5Gm.jpg
-        //"w92", "w154", "w185", "w342", "w500", "w780", or "original". For most phones we recommend using “w185”
+        /*
+        http://image.tmdb.org/t/p/w185//nBNZadXqJSdt05SHLqgT0HuC5Gm.jpg
+        "w92", "w154", "w185", "w342", "w500", "w780", or "original". For most phones we recommend using “w185”
+        */
         String size;
         switch (imageSize) {
             case 0:
@@ -110,15 +128,17 @@ public class Utils {
 
     /**
      * Helper method to return a comma seperated String of genres based on an ArrayList of genre id's
-     * @param g ArrayList<Integer> containing all the genre id's for a specific movie
+     * @param strGen String containing all the genre id's for a specific movie in comma delimited string
      * @return A String containing a readable comma seperated list of genres.
      */
-    public String getGenres(ArrayList<Integer> g) {
+    public String getGenres(String strGen) {
         StringBuilder genres;
         genres = new StringBuilder();
 
-        for(int x = 0; x < g.size(); x++) {
-            int genId = g.get(x);
+        String[] g = strGen.split(",");
+
+        for(int x = 0; x < g.length; x++) {
+            int genId = Integer.parseInt(g[x]);
 
             if(genres.length() != 0) {
                 genres.append(", ");
