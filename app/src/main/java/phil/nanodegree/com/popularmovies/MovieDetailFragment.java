@@ -22,6 +22,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RatingBar;
 import android.widget.TextView;
+import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import com.bumptech.glide.Glide;
 
@@ -54,7 +56,11 @@ public class MovieDetailFragment extends Fragment {
     public ImageView imgPoster, imgBackdrop;
     public ActionBar mActionBar;
 
-    public LinearLayout linGenre, linDate, linLength, linCast, linTrail, linRev;
+    public LinearLayout linGenre, linDate, linLength, linCast, linTrail, linRev,linMasRev, linMasTrail;
+
+    public ToggleButton togFav;
+    public boolean isFav;
+    public int movieSortVal;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -85,10 +91,39 @@ public class MovieDetailFragment extends Fragment {
         linCast = (LinearLayout) fragmentView.findViewById(R.id.detail_lin_cast);
         linTrail = (LinearLayout) fragmentView.findViewById(R.id.detail_lin_trailers);
         linRev = (LinearLayout) fragmentView.findViewById(R.id.detail_lin_reviews);
+        linMasRev = (LinearLayout) fragmentView.findViewById(R.id.detail_master_lin_rev);
+        linMasTrail = (LinearLayout) fragmentView.findViewById(R.id.detail_master_lin_trail);
+        togFav = (ToggleButton) fragmentView.findViewById(R.id.detail_tog_fav);
 
         //Has the option menu so it listens for the up caret press
         setHasOptionsMenu(true);
         mActionBar.setDisplayHomeAsUpEnabled(true);
+
+        togFav.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int favVal = 0;
+                if(togFav.isChecked()) {
+                    Toast.makeText(getActivity(), mMovie.getTitle() + " added to favorites!", Toast.LENGTH_SHORT).show();
+                    isFav = true;
+                    favVal = 20;
+                } else {
+                    Toast.makeText(getActivity(), mMovie.getTitle() + " removed from favorites!", Toast.LENGTH_SHORT).show();
+                    isFav = false;
+                    favVal = -20;
+                }
+
+                ContentValues cv = new ContentValues();
+
+                Cursor curMov = getActivity().getContentResolver().query(MovieContract.MovieEntry.buildMovieUri(0, movieId), null, null, null, null);
+                if(curMov.moveToFirst()) {
+                    movieSortVal = curMov.getInt(curMov.getColumnIndex(MovieContract.MovieEntry.COLUMN_SORT));
+                    cv.put(MovieContract.MovieEntry.COLUMN_SORT, movieSortVal + favVal);
+                    getActivity().getContentResolver().update(MovieContract.MovieEntry.buildMovieUri(0, mMovie.getId()), cv, MovieContract.MovieEntry._ID + " = ?", new String[]{mMovie.getId() + ""});
+                    getActivity().getContentResolver().notifyChange(MovieContract.MovieEntry.buildMovieUri(0, mMovie.getId()), null);
+                }
+            }
+        });
 
         return fragmentView;
     }
@@ -104,127 +139,214 @@ public class MovieDetailFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
 
         if(savedInstanceState == null || !savedInstanceState.containsKey("movie")) {
-            MovieAsyncTask task = new MovieAsyncTask();
-            task.execute();
+            Cursor curMov = getActivity().getContentResolver().query(MovieContract.MovieEntry.buildMovieUri(0, movieId), null, null, null, null);
+
+            if(curMov.moveToFirst()) {
+                String backdrop = curMov.getString(curMov.getColumnIndex(MovieContract.MovieEntry.COLUMN_BACKDROP_PATH));
+                //if we have the backdrop we've downloaded this previously
+                if(backdrop != null && !backdrop.equals("null") && !backdrop.equals(""))
+                    if (Utils.checkIfDatesAreFresh(curMov.getLong(curMov.getColumnIndex(MovieContract.MovieEntry.COLUMN_DATE_ADDED)))) {
+                        Cursor curCast = getActivity().getContentResolver().query(MovieContract.CastEntry.buildCastUriForMovie(movieId), null, null, null, MovieContract.CastEntry.COLUMN_ORDER + " ASC");
+                        Cursor curTrailer = getActivity().getContentResolver().query(MovieContract.TrailerEntry.buildTrailerUriForMovie(movieId), null, null, null, null);
+                        Cursor curReviews = getActivity().getContentResolver().query(MovieContract.ReviewEntry.buildReviewUriForMovie(movieId), null, null, null, null);
+
+                        Movie movie = new Movie(
+                                curMov.getInt(curMov.getColumnIndex(MovieContract.MovieEntry._ID)),
+                                curMov.getString(curMov.getColumnIndex(MovieContract.MovieEntry.COLUMN_TITLE)),
+                                curMov.getString(curMov.getColumnIndex(MovieContract.MovieEntry.COLUMN_RELEASE_DATE)),
+                                curMov.getString(curMov.getColumnIndex(MovieContract.MovieEntry.COLUMN_OVERVIEW)),
+                                curMov.getString(curMov.getColumnIndex(MovieContract.MovieEntry.COLUMN_POSTER_PATH)),
+                                curMov.getDouble(curMov.getColumnIndex(MovieContract.MovieEntry.COLUMN_VOTE_AVERAGE))
+                        );
+
+                        movieSortVal = curMov.getInt(curMov.getColumnIndex(MovieContract.MovieEntry.COLUMN_SORT));
+                        isFav = Utils.isRecordInFavorite(getActivity(), movieSortVal);
+
+                        movie.setTagline(curMov.getString(curMov.getColumnIndex(MovieContract.MovieEntry.COLUMN_TAGLINE)));
+                        movie.setBackdrop(curMov.getString(curMov.getColumnIndex(MovieContract.MovieEntry.COLUMN_BACKDROP_PATH)));
+                        movie.setRunTime(curMov.getInt(curMov.getColumnIndex(MovieContract.MovieEntry.COLUMN_RUNTIME)));
+                        movie.setGenres(curMov.getString(curMov.getColumnIndex(MovieContract.MovieEntry.COLUMN_GENRES)));
+
+                        if (curCast.moveToFirst()) {
+                            ArrayList<String[]> cast_det = new ArrayList<String[]>();
+                            do {
+                                cast_det.add(new String[]{
+                                        curCast.getString(curCast.getColumnIndex(MovieContract.CastEntry.COLUMN_CAST_ID)),
+                                        curCast.getString(curCast.getColumnIndex(MovieContract.CastEntry.COLUMN_NAME)),
+                                        curCast.getString(curCast.getColumnIndex(MovieContract.CastEntry.COLUMN_CHARACTER)),
+                                        curCast.getString(curCast.getColumnIndex(MovieContract.CastEntry.COLUMN_PROFILE_PATH)),
+                                        curCast.getString(curCast.getColumnIndex(MovieContract.CastEntry.COLUMN_ORDER)),
+                                });
+                            } while (curCast.moveToNext());
+                            movie.setCast(cast_det);
+                        }
+
+                        if (curTrailer.moveToFirst()) {
+                            ArrayList<String[]> trailer_det = new ArrayList<String[]>();
+                            do {
+                                trailer_det.add(new String[]{
+                                        curTrailer.getString(curTrailer.getColumnIndex(MovieContract.TrailerEntry.COLUMN_NAME)),
+                                        curTrailer.getString(curTrailer.getColumnIndex(MovieContract.TrailerEntry.COLUMN_SOURCE))
+                                });
+                            } while (curTrailer.moveToNext());
+                            movie.setTrailers(trailer_det);
+                        }
+
+                        if (curReviews.moveToFirst()) {
+                            ArrayList<String[]> reviews_det = new ArrayList<String[]>();
+                            do {
+                                reviews_det.add(new String[]{
+                                        curReviews.getString(curReviews.getColumnIndex(MovieContract.ReviewEntry.COLUMN_REVIEW_ID)),
+                                        curReviews.getString(curReviews.getColumnIndex(MovieContract.ReviewEntry.COLUMN_AUTHOR)),
+                                        curReviews.getString(curReviews.getColumnIndex(MovieContract.ReviewEntry.COLUMN_CONTENT))
+                                });
+                            } while (curReviews.moveToNext());
+                            movie.setReviews(reviews_det);
+                        }
+
+                        mMovie = movie;
+                        updatePageInfo();
+                    } else {
+                        //info isn't fresh, redownload
+                        MovieAsyncTask task = new MovieAsyncTask();
+                        task.execute();
+                    }
+                else {
+                    MovieAsyncTask task = new MovieAsyncTask();
+                    task.execute();
+                }
+            } else {
+                MovieAsyncTask task = new MovieAsyncTask();
+                task.execute();
+            }
         } else {
             mMovie = savedInstanceState.getParcelable("movie");
             if(mMovie != null) {
-                Utils utils = new Utils();
-                txtTitle.setText(mMovie.getTitle());
-                if(mMovie.getGenres().isEmpty()) {
-                    linGenre.setVisibility(View.GONE);
-                } else {
-                    txtGenre.setText(utils.getGenres(mMovie.getGenres()));
-                }
-                if(mMovie.getRunTime() == 0) {
-                    linLength.setVisibility(View.GONE);
-                } else {
-                    txtRunTime.setText(mMovie.getRunTime() + " min");
-                }
-                if(mMovie.getReleaseDate().equals("") || mMovie.getReleaseDate() == null) {
-                    linDate.setVisibility(View.GONE);
-                } else {
-                    txtReleaseDate.setText(mMovie.getReleaseDate());
-                }
-                //Picasso.with(getActivity()).load(utils.constructMoviePosterURL(mMovie.getPosterPath(), 3)).into(imgPoster);
-                Glide.with(getActivity()).load(utils.constructMoviePosterURL(mMovie.getPosterPath(), 3)).into(imgPoster);
-                if(mMovie.getBackdrop().equals("") || mMovie.getBackdrop() == null || mMovie.getBackdrop().equals("null")) {
-                    imgBackdrop.setVisibility(View.GONE);
-                    txtTagline.setVisibility(View.GONE);
-                } else {
-                    //Picasso.with(getActivity()).load(utils.constructMoviePosterURL(mMovie.getBackdrop(), 4)).into(imgBackdrop);
-                    Glide.with(getActivity()).load(utils.constructMoviePosterURL(mMovie.getBackdrop(), 4)).into(imgBackdrop);
-                    if(!mMovie.getTagline().equals("")) {
-                        txtTagline.setText("\"" + mMovie.getTagline() + "\"");
-                    }
-                }
-                if(mMovie.getCast().isEmpty()) {
-
-                } else {
-                    ArrayList<String[]> cast = mMovie.getCast();
-                    for (int x = 0; x < cast.size(); x++ ) {
-                        View card = getActivity().getLayoutInflater().inflate(R.layout.castcard, null);
-
-                        ImageView img = (ImageView) card.findViewById(R.id.castcard_img);
-                        TextView txtName = (TextView) card.findViewById(R.id.castcard_txt_name);
-                        TextView txtCharacter = (TextView) card.findViewById(R.id.castcard_txt_character);
-
-                        txtName.setText(cast.get(x)[1]);
-                        txtCharacter.setText(cast.get(x)[2]);
-                        //ImageView imageView = new ImageView(getActivity());
-                        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-                        lp.setMargins(3, 0, 3, 0);
-                        card.setLayoutParams(lp);
-                        linCast.addView(card);
-                        //Picasso.with(getActivity()).load(utils.constructMoviePosterURL(cast.get(x)[2], 3)).into(img);
-                        String sil = cast.get(x)[3];
-                        if(sil.isEmpty() || sil.equals("null")) {
-                            Glide.with(getActivity()).load(R.drawable.silhouette).centerCrop().into(img);
-                        } else {
-                            Glide.with(getActivity()).load(utils.constructMoviePosterURL(cast.get(x)[3], 3)).centerCrop().into(img);
-                        }
-
-                    }
-                }
-
-                if(mMovie.getTrailers().isEmpty()) {
-
-                } else {
-                    final ArrayList<String[]> trailers = mMovie.getTrailers();
-                    for(int p = 0; p < trailers.size(); p++) {
-                        View card = getActivity().getLayoutInflater().inflate(R.layout.trailercard, null);
-
-                        ImageView img = (ImageView) card.findViewById(R.id.trailercard_img);
-                        TextView txtName = (TextView) card.findViewById(R.id.trailercard_txt_name);
-
-                        txtName.setText(trailers.get(p)[0]);
-                        //ImageView imageView = new ImageView(getActivity());
-                        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-                        lp.setMargins(10, 0, 10, 0);
-                        card.setLayoutParams(lp);
-                        linTrail.addView(card);
-                        final String videoURL = trailers.get(p)[1];
-                        String trailerPoster = "http://img.youtube.com/vi/" + videoURL + "/0.jpg";
-                        //Picasso.with(getActivity()).load(trailerPoster).into(img);
-                        Glide.with(getActivity()).load(trailerPoster).centerCrop().into(img);
-
-                        card.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.youtube.com/watch?v=" + videoURL)));
-                            }
-                        });
-
-                    }
-                }
-                if(mMovie.getReviews().isEmpty()) {
-
-                } else {
-                    final ArrayList<String[]> reviews = mMovie.getReviews();
-                    for(int r = 0; r < reviews.size(); r++) {
-                        View card = getActivity().getLayoutInflater().inflate(R.layout.reviewcard, null);
-
-                        TextView txtAuthor = (TextView) card.findViewById(R.id.reviewcard_author);
-                        TextView txtContent = (TextView) card.findViewById(R.id.reviewcard_content);
-
-                        txtAuthor.setText(reviews.get(r)[0]);
-                        txtContent.setText(reviews.get(r)[1]);
-
-                        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-                        lp.setMargins(10, 0, 10, 0);
-                        card.setLayoutParams(lp);
-                        linRev.addView(card);
-                    }
-                }
-                txtRating.setText(mMovie.getVoteAverage() + " / 10");
-                ratingBar.setRating((float) mMovie.getVoteAverage());
-                txtOverview.setText(mMovie.getOverview());
-                mActionBar.setTitle(mMovie.getTitle());
+                updatePageInfo();
             } else {
                 MovieAsyncTask task = new MovieAsyncTask();
                 task.execute();
             }
         }
+    }
+
+    public void updatePageInfo() {
+        Utils utils = new Utils();
+        txtTitle.setText(mMovie.getTitle());
+        if(isFav) {
+            togFav.setChecked(true);
+        } else {
+            togFav.setChecked(false);
+        }
+        if(mMovie.getGenres().isEmpty()) {
+            linGenre.setVisibility(View.GONE);
+        } else {
+            txtGenre.setText(utils.getGenres(mMovie.getGenres()));
+        }
+        if(mMovie.getRunTime() == 0) {
+            linLength.setVisibility(View.GONE);
+        } else {
+            txtRunTime.setText(mMovie.getRunTime() + " min");
+        }
+        if(mMovie.getReleaseDate().equals("") || mMovie.getReleaseDate() == null) {
+            linDate.setVisibility(View.GONE);
+        } else {
+            txtReleaseDate.setText(mMovie.getReleaseDate());
+        }
+        //Picasso.with(getActivity()).load(utils.constructMoviePosterURL(mMovie.getPosterPath(), 3)).into(imgPoster);
+        Glide.with(getActivity()).load(utils.constructMoviePosterURL(mMovie.getPosterPath(), 3)).into(imgPoster);
+        if(mMovie.getBackdrop().equals("") || mMovie.getBackdrop() == null || mMovie.getBackdrop().equals("null")) {
+            imgBackdrop.setVisibility(View.GONE);
+            txtTagline.setVisibility(View.GONE);
+        } else {
+            //Picasso.with(getActivity()).load(utils.constructMoviePosterURL(mMovie.getBackdrop(), 4)).into(imgBackdrop);
+            Glide.with(getActivity()).load(utils.constructMoviePosterURL(mMovie.getBackdrop(), 4)).into(imgBackdrop);
+            if(!mMovie.getTagline().equals("")) {
+                txtTagline.setText("\"" + mMovie.getTagline() + "\"");
+            }
+        }
+        if(mMovie.getCast() == null || mMovie.getCast().isEmpty()) {
+            linCast.setVisibility(View.GONE);
+        } else {
+            ArrayList<String[]> cast = mMovie.getCast();
+            for (int x = 0; x < cast.size(); x++ ) {
+                View card = getActivity().getLayoutInflater().inflate(R.layout.castcard, null);
+
+                ImageView img = (ImageView) card.findViewById(R.id.castcard_img);
+                TextView txtName = (TextView) card.findViewById(R.id.castcard_txt_name);
+                TextView txtCharacter = (TextView) card.findViewById(R.id.castcard_txt_character);
+
+                txtName.setText(cast.get(x)[1]);
+                txtCharacter.setText(cast.get(x)[2]);
+                //ImageView imageView = new ImageView(getActivity());
+                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                lp.setMargins(3, 0, 3, 0);
+                card.setLayoutParams(lp);
+                linCast.addView(card);
+                //Picasso.with(getActivity()).load(utils.constructMoviePosterURL(cast.get(x)[2], 3)).into(img);
+                String sil = cast.get(x)[3];
+                if(sil.isEmpty() || sil.equals("null")) {
+                    Glide.with(getActivity()).load(R.drawable.silhouette).centerCrop().into(img);
+                } else {
+                    Glide.with(getActivity()).load(utils.constructMoviePosterURL(cast.get(x)[3], 3)).centerCrop().into(img);
+                }
+
+            }
+        }
+
+        if(mMovie.getTrailers() == null || mMovie.getTrailers().isEmpty()) {
+            linMasTrail.setVisibility(View.GONE);
+        } else {
+            final ArrayList<String[]> trailers = mMovie.getTrailers();
+            for(int p = 0; p < trailers.size(); p++) {
+                View card = getActivity().getLayoutInflater().inflate(R.layout.trailercard, null);
+
+                ImageView img = (ImageView) card.findViewById(R.id.trailercard_img);
+                TextView txtName = (TextView) card.findViewById(R.id.trailercard_txt_name);
+
+                txtName.setText(trailers.get(p)[0]);
+                //ImageView imageView = new ImageView(getActivity());
+                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                lp.setMargins(10, 0, 10, 0);
+                card.setLayoutParams(lp);
+                linTrail.addView(card);
+                final String videoURL = trailers.get(p)[1];
+                String trailerPoster = "http://img.youtube.com/vi/" + videoURL + "/0.jpg";
+                //Picasso.with(getActivity()).load(trailerPoster).into(img);
+                Glide.with(getActivity()).load(trailerPoster).centerCrop().into(img);
+
+                card.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.youtube.com/watch?v=" + videoURL)));
+                    }
+                });
+
+            }
+        }
+        if(mMovie.getReviews() == null || mMovie.getReviews().isEmpty()) {
+            linMasRev.setVisibility(View.GONE);
+        } else {
+            final ArrayList<String[]> reviews = mMovie.getReviews();
+            for(int r = 0; r < reviews.size(); r++) {
+                View card = getActivity().getLayoutInflater().inflate(R.layout.reviewcard, null);
+
+                TextView txtAuthor = (TextView) card.findViewById(R.id.reviewcard_author);
+                TextView txtContent = (TextView) card.findViewById(R.id.reviewcard_content);
+
+                txtAuthor.setText(reviews.get(r)[1]);
+                txtContent.setText(reviews.get(r)[2]);
+
+                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                lp.setMargins(10, 0, 10, 0);
+                card.setLayoutParams(lp);
+                linRev.addView(card);
+            }
+        }
+        txtRating.setText(mMovie.getVoteAverage() + " / 10");
+        ratingBar.setRating((float) mMovie.getVoteAverage());
+        txtOverview.setText(mMovie.getOverview());
+        mActionBar.setTitle(mMovie.getTitle());
     }
 
     @Override
@@ -339,121 +461,7 @@ public class MovieDetailFragment extends Fragment {
 
             mMovie = movie;
 
-            Utils utils = new Utils();
-            if(movie != null) {
-                txtTitle.setText(movie.getTitle());
-                if(movie.getGenres().isEmpty()) {
-                    linGenre.setVisibility(View.GONE);
-                } else {
-                    txtGenre.setText(utils.getGenres(movie.getGenres()));
-                }
-                if(movie.getRunTime() == 0) {
-                    linLength.setVisibility(View.GONE);
-                } else {
-                    txtRunTime.setText(movie.getRunTime() + " min");
-                }
-                if(movie.getReleaseDate().equals("") || movie.getReleaseDate() == null) {
-                    linDate.setVisibility(View.GONE);
-                } else {
-                    txtReleaseDate.setText(movie.getReleaseDate());
-                }
-                //Picasso.with(getActivity()).load(utils.constructMoviePosterURL(movie.getPosterPath(), 3)).into(imgPoster);
-                Glide.with(getActivity()).load(utils.constructMoviePosterURL(movie.getPosterPath(), 3)).into(imgPoster);
-                if(movie.getBackdrop().equals("") || movie.getBackdrop() == null || movie.getBackdrop().equals("null")) {
-                    imgBackdrop.setVisibility(View.GONE);
-                    txtTagline.setVisibility(View.GONE);
-                } else {
-                    //Picasso.with(getActivity()).load(utils.constructMoviePosterURL(movie.getBackdrop(), 4)).into(imgBackdrop);
-                    Glide.with(getActivity()).load(utils.constructMoviePosterURL(movie.getBackdrop(), 4)).into(imgBackdrop);
-                    if(!movie.getTagline().equals("")) {
-                        txtTagline.setText("\"" + movie.getTagline() + "\"");
-                    }
-                }
-
-                if(movie.getCast().isEmpty()) {
-
-                } else {
-                    ArrayList<String[]> cast = movie.getCast();
-                    for (int x = 0; x < cast.size(); x++ ) {
-                        View card = getActivity().getLayoutInflater().inflate(R.layout.castcard, null);
-
-                        ImageView img = (ImageView) card.findViewById(R.id.castcard_img);
-                        TextView txtName = (TextView) card.findViewById(R.id.castcard_txt_name);
-                        TextView txtCharacter = (TextView) card.findViewById(R.id.castcard_txt_character);
-
-                        txtName.setText(cast.get(x)[1]);
-                        txtCharacter.setText(cast.get(x)[2]);
-                        //ImageView imageView = new ImageView(getActivity());
-                        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-                        lp.setMargins(3, 0, 3, 0);
-                        card.setLayoutParams(lp);
-                        linCast.addView(card);
-                        //Picasso.with(getActivity()).load(utils.constructMoviePosterURL(cast.get(x)[2], 3)).into(img);
-                        String sil = cast.get(x)[3];
-                        if(sil.isEmpty() || sil.equals("null")) {
-                            Glide.with(getActivity()).load(R.drawable.silhouette).centerCrop().into(img);
-                        } else {
-                            Glide.with(getActivity()).load(utils.constructMoviePosterURL(cast.get(x)[3], 3)).centerCrop().into(img);
-                        }
-                    }
-                }
-
-                if(movie.getTrailers().isEmpty()) {
-
-                } else {
-                    final ArrayList<String[]> trailers = movie.getTrailers();
-                    for(int p = 0; p < trailers.size(); p++) {
-                        View card = getActivity().getLayoutInflater().inflate(R.layout.trailercard, null);
-
-                        ImageView img = (ImageView) card.findViewById(R.id.trailercard_img);
-                        TextView txtName = (TextView) card.findViewById(R.id.trailercard_txt_name);
-
-                        txtName.setText(trailers.get(p)[0]);
-                        //ImageView imageView = new ImageView(getActivity());
-                        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-                        lp.setMargins(10, 0, 10, 0);
-                        card.setLayoutParams(lp);
-                        linTrail.addView(card);
-                        final String videoURL = trailers.get(p)[1];
-                        String trailerPoster = "http://img.youtube.com/vi/" + videoURL + "/0.jpg";
-                        //Picasso.with(getActivity()).load(trailerPoster).into(img);
-                        Glide.with(getActivity()).load(trailerPoster).centerCrop().into(img);
-
-                        card.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.youtube.com/watch?v=" + videoURL)));
-                            }
-                        });
-
-                    }
-                }
-
-                if(movie.getReviews().isEmpty()) {
-
-                } else {
-                    final ArrayList<String[]> reviews = movie.getReviews();
-                    for(int r = 0; r < reviews.size(); r++) {
-                        View card = getActivity().getLayoutInflater().inflate(R.layout.reviewcard, null);
-
-                        TextView txtAuthor = (TextView) card.findViewById(R.id.reviewcard_author);
-                        TextView txtContent = (TextView) card.findViewById(R.id.reviewcard_content);
-
-                        txtAuthor.setText(reviews.get(r)[0]);
-                        txtContent.setText(reviews.get(r)[1]);
-
-                        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-                        lp.setMargins(15, 15, 15, 15);
-                        card.setLayoutParams(lp);
-                        linRev.addView(card);
-                    }
-                }
-
-                txtRating.setText(movie.getVoteAverage() + " / 10");
-                ratingBar.setRating((float) movie.getVoteAverage());
-                txtOverview.setText(movie.getOverview());
-                mActionBar.setTitle(movie.getTitle());
-            }
+            updatePageInfo();
 
             mProgressDialog.dismiss();
         }
@@ -529,6 +537,30 @@ public class MovieDetailFragment extends Fragment {
                 for(int v = 0; v < youtube.length(); v++) {
                     JSONObject jsonTrailerObject = youtube.getJSONObject(v);
                     trailer_det.add(new String[] { jsonTrailerObject.getString("name"), jsonTrailerObject.getString("source") });
+
+                    Cursor curTrailer = getActivity().getContentResolver().query(MovieContract.TrailerEntry.buildTrailerUri(movie.getId(), trailer_det.get(v)[1]), null,
+                            null, null, null);
+
+                    if(curTrailer.moveToFirst()) {
+
+                    } else {
+                        Time dayTime = new Time();
+                        dayTime.setToNow();
+
+                        // we start at the day returned by local time. Otherwise this is a mess.
+                        int julianStartDay = Time.getJulianDay(System.currentTimeMillis(), dayTime.gmtoff);
+
+                        // now we work exclusively in UTC
+                        dayTime = new Time();
+
+                        ContentValues cv = new ContentValues();
+                        cv.put(MovieContract.TrailerEntry.COLUMN_MOVIE_ID, movie.getId());
+                        cv.put(MovieContract.TrailerEntry.COLUMN_NAME, trailer_det.get(v)[0]);
+                        cv.put(MovieContract.TrailerEntry.COLUMN_SOURCE, trailer_det.get(v)[1]);
+                        cv.put(MovieContract.TrailerEntry.COLUMN_DATE_ADDED, Long.toString(dayTime.setJulianDay(julianStartDay)));
+
+                        getActivity().getContentResolver().insert(MovieContract.TrailerEntry.buildTrailerUri(movie.getId(), trailer_det.get(v)[1]), cv);
+                    }
                 }
                 movie.setTrailers(trailer_det);
 
@@ -537,15 +569,51 @@ public class MovieDetailFragment extends Fragment {
                 ArrayList<String[]> reviews_det = new ArrayList<String[]>();
                 for(int r = 0; r < results.length(); r++) {
                     JSONObject jsonReviewObject = results.getJSONObject(r);
-                    reviews_det.add(new String[] { jsonReviewObject.getString("author"), jsonReviewObject.getString("content") });
+                    reviews_det.add(new String[] { jsonReviewObject.getString("id"), jsonReviewObject.getString("author"), jsonReviewObject.getString("content") });
+
+                    Cursor curReviews = getActivity().getContentResolver().query(MovieContract.ReviewEntry.buildReviewUri(movie.getId(), reviews_det.get(r)[0]), null,
+                            null, null, null);
+
+                    if(curReviews.moveToFirst()) {
+
+                    } else {
+                        Time dayTime = new Time();
+                        dayTime.setToNow();
+
+                        // we start at the day returned by local time. Otherwise this is a mess.
+                        int julianStartDay = Time.getJulianDay(System.currentTimeMillis(), dayTime.gmtoff);
+
+                        // now we work exclusively in UTC
+                        dayTime = new Time();
+
+                        ContentValues cv = new ContentValues();
+                        cv.put(MovieContract.ReviewEntry.COLUMN_MOVIE_ID, movie.getId());
+                        cv.put(MovieContract.ReviewEntry.COLUMN_REVIEW_ID, reviews_det.get(r)[0]);
+                        cv.put(MovieContract.ReviewEntry.COLUMN_AUTHOR, reviews_det.get(r)[1]);
+                        cv.put(MovieContract.ReviewEntry.COLUMN_CONTENT, reviews_det.get(r)[2]);
+                        cv.put(MovieContract.ReviewEntry.COLUMN_DATE_ADDED, Long.toString(dayTime.setJulianDay(julianStartDay)));
+
+                        getActivity().getContentResolver().insert(MovieContract.ReviewEntry.buildReviewUri(movie.getId(), reviews_det.get(r)[1]), cv);
+                    }
                 }
                 movie.setReviews(reviews_det);
 
-                movie.setBackdrop(jsonMovieObject.getString("backdrop_path"));
-                movie.setTagline(jsonMovieObject.getString("tagline"));
-                String runtime = jsonMovieObject.getString("runtime");
-                if(!runtime.equals("null") && !runtime.equals("") && runtime != null) {
-                    movie.setRunTime(Integer.parseInt(runtime));
+                //Check if the movie still exists in the db, if it does update the section, otherwise add to db
+                Cursor curMov = getActivity().getContentResolver().query(MovieContract.MovieEntry.buildMovieUri(0, movie.getId()), null, null, null, null);
+                if(curMov.moveToFirst()) {
+                    ContentValues cv = new ContentValues();
+
+                    movie.setBackdrop(jsonMovieObject.getString("backdrop_path"));
+                    movie.setTagline(jsonMovieObject.getString("tagline"));
+                    String runtime = jsonMovieObject.getString("runtime");
+                    if(!runtime.equals("null") && !runtime.equals("") && runtime != null) {
+                        movie.setRunTime(Integer.parseInt(runtime));
+                        cv.put(MovieContract.MovieEntry.COLUMN_RUNTIME, runtime);
+                    }
+
+                    cv.put(MovieContract.MovieEntry.COLUMN_BACKDROP_PATH, jsonMovieObject.getString("backdrop_path"));
+                    cv.put(MovieContract.MovieEntry.COLUMN_TAGLINE, jsonMovieObject.getString("tagline"));
+                    getActivity().getContentResolver().update(MovieContract.MovieEntry.buildMovieUri(0, movie.getId()), cv, MovieContract.MovieEntry._ID + " = ?", new String[]{movie.getId() + ""});
                 }
 
                 return movie;

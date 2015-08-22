@@ -59,6 +59,10 @@ public class MovieContract {
             return ContentUris.withAppendedId(uri, castid); //id at the end after movie
         }
 
+        public static Uri buildCastUriForMovie(int movie) {
+            return CONTENT_URI.buildUpon().appendPath(movie + "").build(); //only add movie value
+        }
+
         public static int getMovieIdFromUri(Uri uri) {
             return Integer.parseInt(uri.getPathSegments().get(1));
         }
@@ -85,17 +89,21 @@ public class MovieContract {
         public static final Uri CONTENT_URI =
                 BASE_CONTENT_URI.buildUpon().appendPath(PATH_TRAILERS).build();
 
-        public static Uri buildTrailerUri(int movie, long trailerId) {
+        public static Uri buildTrailerUri(int movie, String trailerURL) {
             Uri uri = CONTENT_URI.buildUpon().appendPath(movie + "").build(); //only add movie value
-            return ContentUris.withAppendedId(uri, trailerId); //id at the end after movie
+            return uri.buildUpon().appendPath(trailerURL).build(); //id at the end after movie
+        }
+
+        public static Uri buildTrailerUriForMovie(int movie) {
+            return CONTENT_URI.buildUpon().appendPath(movie + "").build(); //only add movie value
         }
 
         public static int getMovieIdFromUri(Uri uri) {
             return Integer.parseInt(uri.getPathSegments().get(1));
         }
 
-        public static int getTrailerIdFromUri(Uri uri) {
-            return Integer.parseInt(uri.getPathSegments().get(2));
+        public static String getTrailerURLFromUri(Uri uri) {
+            return uri.getPathSegments().get(2);
         }
     }
 
@@ -116,17 +124,21 @@ public class MovieContract {
         public static final Uri CONTENT_URI =
                 BASE_CONTENT_URI.buildUpon().appendPath(PATH_REVIEWS).build();
 
-        public static Uri buildReviewUri(int movie, long reviewId) {
+        public static Uri buildReviewUri(int movie, String reviewId) {
             Uri uri = CONTENT_URI.buildUpon().appendPath(movie + "").build(); //only add movie value
-            return ContentUris.withAppendedId(uri, reviewId); //id at the end after movie
+            return uri.buildUpon().appendPath(reviewId).build();//id at the end after movie
+        }
+
+        public static Uri buildReviewUriForMovie(int movie) {
+            return CONTENT_URI.buildUpon().appendPath(movie + "").build(); //only add movie value
         }
 
         public static int getMovieIdFromUri(Uri uri) {
             return Integer.parseInt(uri.getPathSegments().get(1));
         }
 
-        public static int getReviewIdFromUri(Uri uri) {
-            return Integer.parseInt(uri.getPathSegments().get(2));
+        public static String getReviewIdFromUri(Uri uri) {
+            return uri.getPathSegments().get(2);
         }
     }
 

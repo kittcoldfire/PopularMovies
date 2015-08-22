@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CursorAdapter;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
@@ -21,6 +22,7 @@ import phil.nanodegree.com.popularmovies.utilities.Utils;
  */
 public class GridMoviePosterCursorAdapter extends CursorAdapter {
 
+    private boolean isConnected;
     /**
      * Cache of the children views for a forecast list item.
      */
@@ -29,12 +31,14 @@ public class GridMoviePosterCursorAdapter extends CursorAdapter {
         public final TextView txtTitle;
         public final TextView txtGenre;
         public final RatingBar rtbRating;
+        public final LinearLayout linOverlay;
 
         public ViewHolder(View view) {
             imageView = (ImageView) view.findViewById(R.id.gmp_image);
             txtTitle = (TextView) view.findViewById(R.id.gmp_title);
             txtGenre = (TextView) view.findViewById(R.id.gmp_genre);
             rtbRating = (RatingBar) view.findViewById(R.id.gmp_rating);
+            linOverlay = (LinearLayout) view.findViewById(R.id.gmp_lin_overlay);
         }
     }
 
@@ -58,6 +62,8 @@ public class GridMoviePosterCursorAdapter extends CursorAdapter {
 
         ViewHolder viewHolder = (ViewHolder) view.getTag();
 
+        viewHolder.linOverlay.setVisibility(View.GONE);
+
         String title = cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_TITLE));
         viewHolder.txtTitle.setText(title);
 
@@ -70,7 +76,19 @@ public class GridMoviePosterCursorAdapter extends CursorAdapter {
             viewHolder.txtGenre.setText(genres);
         }
 
+        if(!isConnected) {
+            String backdrop = cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_BACKDROP_PATH));
+
+            if(backdrop == null || backdrop.equals("") || backdrop.equals("null")) {
+                viewHolder.linOverlay.setVisibility(View.VISIBLE);
+            }
+        }
+
         double rating = cursor.getInt(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_VOTE_AVERAGE));
         viewHolder.rtbRating.setRating((float) rating / 2);
+    }
+
+    public void setOfflineMode(boolean offline) {
+        this.isConnected = offline;
     }
 }

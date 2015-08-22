@@ -2,8 +2,11 @@ package phil.nanodegree.com.popularmovies;
 
 import android.app.ProgressDialog;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -27,6 +30,7 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.GridView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -67,6 +71,7 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
     public String searchParam;
     private Bundle savedState = null;
     private boolean mRestored = false;
+    private boolean isConnected;
 
     private static final int MOVIES_LOADER = 0;
 
@@ -78,6 +83,7 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
             MovieContract.MovieEntry.COLUMN_GENRES,
             MovieContract.MovieEntry.COLUMN_POSTER_PATH,
             MovieContract.MovieEntry.COLUMN_VOTE_AVERAGE,
+            MovieContract.MovieEntry.COLUMN_BACKDROP_PATH,
             MovieContract.MovieEntry.COLUMN_SORT,
             MovieContract.MovieEntry.COLUMN_DATE_ADDED
     };
@@ -106,18 +112,36 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
                 Cursor mCursor = mCursorAdapter.getCursor();
                 if(mCursor.moveToPosition(position)) {
                     int movieId = mCursor.getInt(mCursor.getColumnIndex(MovieContract.MovieEntry._ID));
+                    if(!isConnected) {
+                        String backdrop = mCursor.getString(mCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_BACKDROP_PATH));
+                        if(backdrop == null || backdrop.equals("") || backdrop.equals("null")) {
+                            Toast.makeText(getActivity(), "Content not downloaded for this title, please reconnect internet connection to view details!", Toast.LENGTH_LONG).show();
+                        } else {
+                            Bundle args = new Bundle();
+                            args.putInt("movieId", movieId);
 
-                    Bundle args = new Bundle();
-                    args.putInt("movieId", movieId);
+                            MovieDetailFragment mdf = new MovieDetailFragment();
+                            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+                            transaction.addToBackStack(null);
 
-                    MovieDetailFragment mdf = new MovieDetailFragment();
-                    transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-                    transaction.addToBackStack(null);
+                            mdf.setArguments(args);
+                            transaction.replace(R.id.content_frame, mdf);
 
-                    mdf.setArguments(args);
-                    transaction.replace(R.id.content_frame, mdf);
+                            transaction.commit();
+                        }
+                    } else {
+                        Bundle args = new Bundle();
+                        args.putInt("movieId", movieId);
 
-                    transaction.commit();
+                        MovieDetailFragment mdf = new MovieDetailFragment();
+                        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+                        transaction.addToBackStack(null);
+
+                        mdf.setArguments(args);
+                        transaction.replace(R.id.content_frame, mdf);
+
+                        transaction.commit();
+                    }
                 }
             }
         });
@@ -158,6 +182,17 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
 //            mGridView.setAdapter(mAdapter);
 //        }
 
+        ConnectivityManager cm =
+                (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+
+        if(!isConnected) {
+            Toast.makeText(getActivity(), "No internet connection available, running in offline mode!", Toast.LENGTH_LONG).show();
+        }
+        mCursorAdapter.setOfflineMode(isConnected);
+
         return fragmentView;
     }
 
@@ -190,8 +225,12 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
             //mAdapter = new GridMoviePosterAdapter(getActivity(), mMovies);
         } else {
             if(mRestored == false) {
-                MovieAsyncTask task = new MovieAsyncTask();
-                task.execute();
+                if(Utils.checkIfSectionDataIsCurrent(getActivity())) {
+
+                } else {
+                    MovieAsyncTask task = new MovieAsyncTask();
+                    task.execute();
+                }
             }
         }
 
@@ -238,6 +277,8 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
             mActionBar.setTitle(R.string.highest_rated);
         } else if(mPrefSort == 11) { //highest revenue if selected
             mActionBar.setTitle(R.string.highest_revenue);
+        } else if(mPrefSort == 20) {
+            mActionBar.setTitle(R.string.favorites);
         }
     }
 
@@ -257,20 +298,29 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
         MenuItem sort_hr = menu.findItem(R.id.action_sort_highest_rated);
         MenuItem sort_p = menu.findItem(R.id.action_sort_popular);
         MenuItem sort_rev = menu.findItem(R.id.action_sort_highest_revenue);
+        MenuItem sort_fav = menu.findItem(R.id.action_sort_favorite);
 
         //Popular by default, so only show highest rated
         if(mPrefSort == 1) {
             sort_p.setVisible(false);
             sort_rev.setVisible(true);
             sort_hr.setVisible(true);
+            sort_fav.setVisible(true);
         } else if (mPrefSort == 5) { //highest rated if selected
             sort_p.setVisible(true);
             sort_rev.setVisible(true);
             sort_hr.setVisible(false);
+            sort_fav.setVisible(true);
         } else if (mPrefSort == 11) { //highest revenue if selected
             sort_p.setVisible(true);
             sort_hr.setVisible(true);
             sort_rev.setVisible(false);
+            sort_fav.setVisible(true);
+        } else if(mPrefSort == 20) { //favorite
+            sort_p.setVisible(true);
+            sort_hr.setVisible(true);
+            sort_rev.setVisible(true);
+            sort_fav.setVisible(false);
         }
     }
 
@@ -283,20 +333,38 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
         if (id == R.id.action_sort_popular) {
             searchParam = mPrefSearchPopular;
             mPrefSort = 1;
-            MovieAsyncTask task = new MovieAsyncTask();
-            task.execute();
+            if(Utils.checkIfSectionDataIsCurrent(getActivity())) {
+                onSortChanged();
+            } else {
+                MovieAsyncTask task = new MovieAsyncTask();
+                task.execute();
+            }
             return true;
         } else if(id == R.id.action_sort_highest_rated) {
             searchParam = mPrefSearchHRated;
             mPrefSort = 5;
-            MovieAsyncTask task = new MovieAsyncTask();
-            task.execute();
+            if(Utils.checkIfSectionDataIsCurrent(getActivity())) {
+                onSortChanged();
+            } else {
+                MovieAsyncTask task = new MovieAsyncTask();
+                task.execute();
+            }
             return true;
         } else if(id == R.id.action_sort_highest_revenue) {
             searchParam = mPrefSearchHRevenue;
             mPrefSort = 11;
-            MovieAsyncTask task = new MovieAsyncTask();
-            task.execute();
+            if(Utils.checkIfSectionDataIsCurrent(getActivity())) {
+                onSortChanged();
+            } else {
+                MovieAsyncTask task = new MovieAsyncTask();
+                task.execute();
+            }
+            return true;
+        } else if(id == R.id.action_sort_favorite) {
+            searchParam = mPrefSearchHRevenue;
+            mPrefSort = 20;
+            onSortChanged();
+
             return true;
         }
 
@@ -307,6 +375,16 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
     // since we read the sort section when we create the loader, all we need to do is restart things
     void onSortChanged( ) {
         getLoaderManager().restartLoader(MOVIES_LOADER, null, this);
+        ActionBar mActionBar = ((ActionBarActivity) getActivity()).getSupportActionBar();
+        if(mPrefSort == 1) {
+            mActionBar.setTitle(R.string.most_popular);
+        } else if (mPrefSort == 5) { //highest rated if selected
+            mActionBar.setTitle(R.string.highest_rated);
+        } else if(mPrefSort == 11) { //highest revenue if selected
+            mActionBar.setTitle(R.string.highest_revenue);
+        } else if(mPrefSort == 20) {
+            mActionBar.setTitle(R.string.favorites);
+        }
     }
 
     @Override
@@ -460,6 +538,10 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
             try {
                 JSONObject jsonObject = new JSONObject(stringFromStream);
                 JSONArray array = (JSONArray) jsonObject.get("results");
+
+                //Save only our favorite movies, than delete the rest from this section
+                Utils.cleanUpOldData(getActivity());
+
                 for (int i = 0; i < array.length(); i++) {
                     JSONObject jsonMovieObject = array.getJSONObject(i);
                     Movie movie = new Movie(
@@ -484,9 +566,28 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
                     movie.setGenres(strGenre.toString());
                     results.add(movie);
                     Log.d(LOG_TAG, "Added movie: " + movie.getTitle());
+
+                    //Check if the movie still exists in the db, if it does update the section, otherwise add to db
                     Cursor curMov = getActivity().getContentResolver().query(MovieContract.MovieEntry.buildMovieUri(0, movie.getId()), null, null, null, null);
                     if(curMov.moveToFirst()) {
+                        Time dayTime = new Time();
+                        dayTime.setToNow();
 
+                        // we start at the day returned by local time. Otherwise this is a mess.
+                        int julianStartDay = Time.getJulianDay(System.currentTimeMillis(), dayTime.gmtoff);
+
+                        // now we work exclusively in UTC
+                        dayTime = new Time();
+
+                        ContentValues cv = new ContentValues();
+
+                        double sort = curMov.getDouble(curMov.getColumnIndex(MovieContract.MovieEntry.COLUMN_SORT));
+                        int addSort = Utils.getSortSection(getActivity());
+                        sort += addSort;
+
+                        cv.put(MovieContract.MovieEntry.COLUMN_SORT, sort);
+                        cv.put(MovieContract.MovieEntry.COLUMN_DATE_ADDED, Long.toString(dayTime.setJulianDay(julianStartDay)));
+                        getActivity().getContentResolver().update(MovieContract.MovieEntry.buildMovieUri(0, movie.getId()), cv, MovieContract.MovieEntry._ID + " = ?", new String[] { movie.getId() + ""});
                     } else {
                         Time dayTime = new Time();
                         dayTime.setToNow();

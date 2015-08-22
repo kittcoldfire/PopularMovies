@@ -1,12 +1,15 @@
 package phil.nanodegree.com.popularmovies.utilities;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.text.format.Time;
 
 import phil.nanodegree.com.popularmovies.R;
+import phil.nanodegree.com.popularmovies.data.MovieContract;
 
 public class Utils {
 
@@ -16,11 +19,26 @@ public class Utils {
     private static String mPrefSearchHRated = "vote_average.desc";
     private static String mPrefSearchHRevenue = "revenue.desc";
 
+    private static final String[] MOVIES_COLUMNS = {
+            MovieContract.MovieEntry._ID,
+            MovieContract.MovieEntry.COLUMN_TITLE,
+            MovieContract.MovieEntry.COLUMN_GENRES,
+            MovieContract.MovieEntry.COLUMN_POSTER_PATH,
+            MovieContract.MovieEntry.COLUMN_VOTE_AVERAGE,
+            MovieContract.MovieEntry.COLUMN_SORT,
+            MovieContract.MovieEntry.COLUMN_DATE_ADDED
+    };
+
     public Utils() {
 
     }
 
-    public boolean checkIfDatesAreFresh(long date) {
+    /**
+     * Helper method to determine if the date is older than a day old
+     * @param date the date to check if its older than a day old
+     * @return boolean false means the date is older than 1 day
+     */
+    public static boolean checkIfDatesAreFresh(long date) {
         Time dayTime = new Time();
         dayTime.setToNow();
 
@@ -116,7 +134,7 @@ public class Utils {
      * @param sort - int value of the sort section, 1 - Most Popular, 5 - Highest Rated, 11 - Highest Revenue, 20 - Favourite Movies
      * @return A string delimited by commas to be used in SQL queries to find movies in each section
      */
-    public String getSortString(int sort) {
+    public static String getSortString(int sort) {
         String sortString = "";
 
         switch (sort) {
@@ -137,7 +155,7 @@ public class Utils {
         return sortString;
     }
 
-    public String[] getSortStringArray(int sort) {
+    public static String[] getSortStringArray(int sort) {
         String[] sortString;
 
         switch (sort) {
@@ -267,6 +285,88 @@ public class Utils {
             editor.putInt(PREF_SORT, 11);
             editor.putString(PREF_SEARCH, mPrefSearchHRevenue);
             editor.commit();
+        } else if(id == R.id.action_sort_favorite) {
+            editor.putInt(PREF_SORT, 20);
+            editor.putString(PREF_SEARCH, "");
+            editor.commit();
         }
+    }
+
+    public static boolean checkIfSectionDataIsCurrent(Context context) {
+        String sortOrder = null;
+
+        int sortSection = Utils.getSortSection(context);
+        Uri moviesSortedUri = MovieContract.MovieEntry.buildMoviesSorted(sortSection);
+
+        Cursor curMov = context.getContentResolver().query(moviesSortedUri, null, null, null, null);
+
+        if(curMov.moveToFirst()) {
+            while(curMov.moveToNext()) {
+                long time = curMov.getLong(curMov.getColumnIndex(MovieContract.MovieEntry.COLUMN_DATE_ADDED));
+
+                if(checkIfDatesAreFresh(time)) {
+
+                } else {
+                    return false;
+                }
+            }
+        } else {
+            return false;
+        }
+
+        return true;
+    }
+
+    public static boolean isRecordInFavorite(Context context, int sortNum) {
+        String[] favArray = getSortStringArray(20); //20 is for favorite
+
+        for(int x = 0; x < favArray.length; x++) {
+            if(favArray[x].equals(sortNum + "")) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static void cleanUpOldData(Context context) {
+        //Find all favorite movies, update their section to only favorite, then delete rest of entries
+        String sortOrder = null;
+
+        int favSection = 20;
+        Uri moviesSortedUri = MovieContract.MovieEntry.buildMoviesSorted(favSection);
+        Cursor favCursor = context.getContentResolver().query(
+                moviesSortedUri,
+                MOVIES_COLUMNS,
+                null,
+                null,
+                sortOrder);
+
+        if(favCursor.moveToFirst()) {
+            while (favCursor.moveToNext()) {
+                Time dayTime = new Time();
+                dayTime.setToNow();
+
+                // we start at the day returned by local time. Otherwise this is a mess.
+                int julianStartDay = Time.getJulianDay(System.currentTimeMillis(), dayTime.gmtoff);
+
+                // now we work exclusively in UTC
+                dayTime = new Time();
+
+                ContentValues cv = new ContentValues();
+
+                int id = favCursor.getColumnIndex(MovieContract.MovieEntry._ID);
+
+                cv.put(MovieContract.MovieEntry.COLUMN_SORT, 20); //Fav column value
+                cv.put(MovieContract.MovieEntry.COLUMN_DATE_ADDED, Long.toString(dayTime.setJulianDay(julianStartDay)));
+                context.getContentResolver().update(MovieContract.MovieEntry.buildMovieUri(0, id), cv, MovieContract.MovieEntry._ID + " = ?", new String[] { id + ""});
+            }
+        }
+        //Delete all other entries in that section
+        // delete old data so we don't build up an endless history
+        Uri deleteURI = MovieContract.MovieEntry.buildMoviesSorted(Utils.getSortSection(context));
+        context.getContentResolver().delete(deleteURI,
+                MovieContract.MovieEntry.COLUMN_SORT + " IN ( ?, ?, ?, ?, ?, ?, ?, ? )",
+                Utils.getSortStringArray(Utils.getSortSection(context)));
     }
 }

@@ -4,10 +4,12 @@
     <string name="most_popular">Most Popular Movies</string>
     <string name="highest_rated">Highest Rated Movies</string>
     <string name="highest_revenue">Highest Revenue Movies</string>
+    <string name="favorites">Favorite Movies</string>
     <string name="overview">Summary</string>
     <string name="sort_most_popular">Most Popular</string>
     <string name="sort_highest_rated">Highest Rated</string>
     <string name="sort_highest_revenue">Highest Revenue</string>
+    <string name="sort_favorite">Favorites</string>
 
     <string name="content_authority">phil.nanodegree.com.popularmovies</string>
 </resources>

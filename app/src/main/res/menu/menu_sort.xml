@@ -18,4 +18,9 @@
         android:title="@string/sort_highest_revenue"
         app:showAsAction="never"
         />
+    <item
+        android:id="@+id/action_sort_favorite"
+        android:title="@string/sort_favorite"
+        app:showAsAction="never"
+        />
 </menu>
