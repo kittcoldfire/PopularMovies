@@ -155,6 +155,41 @@ public class Utils {
         return sortString;
     }
 
+    /***
+     * Helper method that returns the updated Sort value to be stored in the DB when updating records.
+     * This way we retain all other sections this record was from.
+     * @param currentSection The section we're upating, popular, revenue, rating, favorite
+     * @param currentRecordSortValue The value from the DB that we're updating
+     * @return Either the same value, or the new value without the current section
+     */
+    public static int getUpdatedMovieSortValue(int currentSection, int currentRecordSortValue) {
+        String[] sortString;
+
+        switch (currentSection) {
+            case 1: //Anything with Popular in it
+                sortString = new String[]{"1", "6", "12", "21", "17", "26", "32", "37"};
+                break;
+            case 5: //Anything with Rated in it
+                sortString = new String[]{"5", "6", "16", "25", "17", "26", "36", "37"};
+                break;
+            case 11: //Anything with Revenue in it
+                sortString = new String[]{"11", "12", "16", "31", "17", "32", "36", "37"};
+                break;
+            case 20: //Anything with Favourite in it
+                sortString = new String[]{"20", "21", "25", "31", "26", "32", "36", "37"};
+                break;
+            default:
+                sortString = new String[]{};
+        }
+        for(int x = 0; x < sortString.length; x++) {
+            if(currentRecordSortValue == Integer.parseInt(sortString[x])) {
+                return currentRecordSortValue;
+            }
+        }
+
+        return (currentRecordSortValue + currentSection);
+    }
+
     public static String[] getSortStringArray(int sort) {
         String[] sortString;
 
@@ -343,7 +378,7 @@ public class Utils {
                 sortOrder);
 
         if(favCursor.moveToFirst()) {
-            while (favCursor.moveToNext()) {
+            do {
                 Time dayTime = new Time();
                 dayTime.setToNow();
 
@@ -355,12 +390,12 @@ public class Utils {
 
                 ContentValues cv = new ContentValues();
 
-                int id = favCursor.getColumnIndex(MovieContract.MovieEntry._ID);
+                int id = favCursor.getInt(favCursor.getColumnIndex(MovieContract.MovieEntry._ID));
 
                 cv.put(MovieContract.MovieEntry.COLUMN_SORT, 20); //Fav column value
                 cv.put(MovieContract.MovieEntry.COLUMN_DATE_ADDED, Long.toString(dayTime.setJulianDay(julianStartDay)));
-                context.getContentResolver().update(MovieContract.MovieEntry.buildMovieUri(0, id), cv, MovieContract.MovieEntry._ID + " = ?", new String[] { id + ""});
-            }
+                context.getContentResolver().update(MovieContract.MovieEntry.buildMovieUri(20, id), cv, MovieContract.MovieEntry._ID + " = ?", new String[] { id + ""});
+            } while (favCursor.moveToNext());
         }
         //Delete all other entries in that section
         // delete old data so we don't build up an endless history

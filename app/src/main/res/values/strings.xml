@@ -12,4 +12,6 @@
     <string name="sort_favorite">Favorites</string>
 
     <string name="content_authority">phil.nanodegree.com.popularmovies</string>
+    <string name="title_activity_detail">Detail Activity</string>
+    <string name="action_share">Share</string>
 </resources>

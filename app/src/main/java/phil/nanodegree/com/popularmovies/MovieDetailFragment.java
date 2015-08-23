@@ -2,14 +2,19 @@ package phil.nanodegree.com.popularmovies;
 
 import android.app.ProgressDialog;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.ShareActionProvider;
 import android.text.format.Time;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -62,6 +67,17 @@ public class MovieDetailFragment extends Fragment {
     public boolean isFav;
     public int movieSortVal;
 
+    private boolean mTwoPane;
+    private boolean isConnected;
+
+    private ShareActionProvider mShareActionProvider;
+    private String mShareMovieTitle;
+    private String mShareTrailerURL;
+
+    public void setIfTwoPane(boolean twoPane) {
+        this.mTwoPane = twoPane;
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -97,7 +113,17 @@ public class MovieDetailFragment extends Fragment {
 
         //Has the option menu so it listens for the up caret press
         setHasOptionsMenu(true);
-        mActionBar.setDisplayHomeAsUpEnabled(true);
+        MainActivityFragment maf = (MainActivityFragment)getActivity().getSupportFragmentManager().findFragmentById(R.id.fragment_movies);
+        if ( null != maf ) {
+            setIfTwoPane(true);
+        }
+        if(!mTwoPane) {
+            mActionBar.setDisplayHomeAsUpEnabled(true);
+        } else {
+            mActionBar.setHomeButtonEnabled(false); // disable the button
+            mActionBar.setDisplayHomeAsUpEnabled(false); // remove the left caret
+            mActionBar.setDisplayShowHomeEnabled(false); // remove the icon
+        }
 
         togFav.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -138,94 +164,113 @@ public class MovieDetailFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        if(savedInstanceState == null || !savedInstanceState.containsKey("movie")) {
-            Cursor curMov = getActivity().getContentResolver().query(MovieContract.MovieEntry.buildMovieUri(0, movieId), null, null, null, null);
+        ConnectivityManager cm =
+                (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
 
-            if(curMov.moveToFirst()) {
-                String backdrop = curMov.getString(curMov.getColumnIndex(MovieContract.MovieEntry.COLUMN_BACKDROP_PATH));
-                //if we have the backdrop we've downloaded this previously
-                if(backdrop != null && !backdrop.equals("null") && !backdrop.equals(""))
-                    if (Utils.checkIfDatesAreFresh(curMov.getLong(curMov.getColumnIndex(MovieContract.MovieEntry.COLUMN_DATE_ADDED)))) {
-                        Cursor curCast = getActivity().getContentResolver().query(MovieContract.CastEntry.buildCastUriForMovie(movieId), null, null, null, MovieContract.CastEntry.COLUMN_ORDER + " ASC");
-                        Cursor curTrailer = getActivity().getContentResolver().query(MovieContract.TrailerEntry.buildTrailerUriForMovie(movieId), null, null, null, null);
-                        Cursor curReviews = getActivity().getContentResolver().query(MovieContract.ReviewEntry.buildReviewUriForMovie(movieId), null, null, null, null);
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
 
-                        Movie movie = new Movie(
-                                curMov.getInt(curMov.getColumnIndex(MovieContract.MovieEntry._ID)),
-                                curMov.getString(curMov.getColumnIndex(MovieContract.MovieEntry.COLUMN_TITLE)),
-                                curMov.getString(curMov.getColumnIndex(MovieContract.MovieEntry.COLUMN_RELEASE_DATE)),
-                                curMov.getString(curMov.getColumnIndex(MovieContract.MovieEntry.COLUMN_OVERVIEW)),
-                                curMov.getString(curMov.getColumnIndex(MovieContract.MovieEntry.COLUMN_POSTER_PATH)),
-                                curMov.getDouble(curMov.getColumnIndex(MovieContract.MovieEntry.COLUMN_VOTE_AVERAGE))
-                        );
+        if(movieId != 0) {
+            if (savedInstanceState == null || !savedInstanceState.containsKey("movie")) {
+                Cursor curMov = getActivity().getContentResolver().query(MovieContract.MovieEntry.buildMovieUri(0, movieId), null, null, null, null);
 
-                        movieSortVal = curMov.getInt(curMov.getColumnIndex(MovieContract.MovieEntry.COLUMN_SORT));
-                        isFav = Utils.isRecordInFavorite(getActivity(), movieSortVal);
+                if (curMov.moveToFirst()) {
+                    String backdrop = curMov.getString(curMov.getColumnIndex(MovieContract.MovieEntry.COLUMN_BACKDROP_PATH));
+                    //if we have the backdrop we've downloaded this previously
+                    if (backdrop != null && !backdrop.equals("null") && !backdrop.equals(""))
+                        if (Utils.checkIfDatesAreFresh(curMov.getLong(curMov.getColumnIndex(MovieContract.MovieEntry.COLUMN_DATE_ADDED))) || !isConnected) {
+                            Cursor curCast = getActivity().getContentResolver().query(MovieContract.CastEntry.buildCastUriForMovie(movieId), null, null, null, MovieContract.CastEntry.COLUMN_ORDER + " ASC");
+                            Cursor curTrailer = getActivity().getContentResolver().query(MovieContract.TrailerEntry.buildTrailerUriForMovie(movieId), null, null, null, null);
+                            Cursor curReviews = getActivity().getContentResolver().query(MovieContract.ReviewEntry.buildReviewUriForMovie(movieId), null, null, null, null);
 
-                        movie.setTagline(curMov.getString(curMov.getColumnIndex(MovieContract.MovieEntry.COLUMN_TAGLINE)));
-                        movie.setBackdrop(curMov.getString(curMov.getColumnIndex(MovieContract.MovieEntry.COLUMN_BACKDROP_PATH)));
-                        movie.setRunTime(curMov.getInt(curMov.getColumnIndex(MovieContract.MovieEntry.COLUMN_RUNTIME)));
-                        movie.setGenres(curMov.getString(curMov.getColumnIndex(MovieContract.MovieEntry.COLUMN_GENRES)));
+                            Movie movie = new Movie(
+                                    curMov.getInt(curMov.getColumnIndex(MovieContract.MovieEntry._ID)),
+                                    curMov.getString(curMov.getColumnIndex(MovieContract.MovieEntry.COLUMN_TITLE)),
+                                    curMov.getString(curMov.getColumnIndex(MovieContract.MovieEntry.COLUMN_RELEASE_DATE)),
+                                    curMov.getString(curMov.getColumnIndex(MovieContract.MovieEntry.COLUMN_OVERVIEW)),
+                                    curMov.getString(curMov.getColumnIndex(MovieContract.MovieEntry.COLUMN_POSTER_PATH)),
+                                    curMov.getDouble(curMov.getColumnIndex(MovieContract.MovieEntry.COLUMN_VOTE_AVERAGE))
+                            );
 
-                        if (curCast.moveToFirst()) {
-                            ArrayList<String[]> cast_det = new ArrayList<String[]>();
-                            do {
-                                cast_det.add(new String[]{
-                                        curCast.getString(curCast.getColumnIndex(MovieContract.CastEntry.COLUMN_CAST_ID)),
-                                        curCast.getString(curCast.getColumnIndex(MovieContract.CastEntry.COLUMN_NAME)),
-                                        curCast.getString(curCast.getColumnIndex(MovieContract.CastEntry.COLUMN_CHARACTER)),
-                                        curCast.getString(curCast.getColumnIndex(MovieContract.CastEntry.COLUMN_PROFILE_PATH)),
-                                        curCast.getString(curCast.getColumnIndex(MovieContract.CastEntry.COLUMN_ORDER)),
-                                });
-                            } while (curCast.moveToNext());
-                            movie.setCast(cast_det);
+                            movieSortVal = curMov.getInt(curMov.getColumnIndex(MovieContract.MovieEntry.COLUMN_SORT));
+                            isFav = Utils.isRecordInFavorite(getActivity(), movieSortVal);
+
+                            movie.setTagline(curMov.getString(curMov.getColumnIndex(MovieContract.MovieEntry.COLUMN_TAGLINE)));
+                            movie.setBackdrop(curMov.getString(curMov.getColumnIndex(MovieContract.MovieEntry.COLUMN_BACKDROP_PATH)));
+                            movie.setRunTime(curMov.getInt(curMov.getColumnIndex(MovieContract.MovieEntry.COLUMN_RUNTIME)));
+                            movie.setGenres(curMov.getString(curMov.getColumnIndex(MovieContract.MovieEntry.COLUMN_GENRES)));
+
+                            if (curCast.moveToFirst()) {
+                                ArrayList<String[]> cast_det = new ArrayList<String[]>();
+                                do {
+                                    cast_det.add(new String[]{
+                                            curCast.getString(curCast.getColumnIndex(MovieContract.CastEntry.COLUMN_CAST_ID)),
+                                            curCast.getString(curCast.getColumnIndex(MovieContract.CastEntry.COLUMN_NAME)),
+                                            curCast.getString(curCast.getColumnIndex(MovieContract.CastEntry.COLUMN_CHARACTER)),
+                                            curCast.getString(curCast.getColumnIndex(MovieContract.CastEntry.COLUMN_PROFILE_PATH)),
+                                            curCast.getString(curCast.getColumnIndex(MovieContract.CastEntry.COLUMN_ORDER)),
+                                    });
+                                } while (curCast.moveToNext());
+                                movie.setCast(cast_det);
+                            }
+
+                            if (curTrailer.moveToFirst()) {
+                                ArrayList<String[]> trailer_det = new ArrayList<String[]>();
+                                do {
+                                    trailer_det.add(new String[]{
+                                            curTrailer.getString(curTrailer.getColumnIndex(MovieContract.TrailerEntry.COLUMN_NAME)),
+                                            curTrailer.getString(curTrailer.getColumnIndex(MovieContract.TrailerEntry.COLUMN_SOURCE))
+                                    });
+                                } while (curTrailer.moveToNext());
+                                movie.setTrailers(trailer_det);
+                            }
+
+                            if (curReviews.moveToFirst()) {
+                                ArrayList<String[]> reviews_det = new ArrayList<String[]>();
+                                do {
+                                    reviews_det.add(new String[]{
+                                            curReviews.getString(curReviews.getColumnIndex(MovieContract.ReviewEntry.COLUMN_REVIEW_ID)),
+                                            curReviews.getString(curReviews.getColumnIndex(MovieContract.ReviewEntry.COLUMN_AUTHOR)),
+                                            curReviews.getString(curReviews.getColumnIndex(MovieContract.ReviewEntry.COLUMN_CONTENT))
+                                    });
+                                } while (curReviews.moveToNext());
+                                movie.setReviews(reviews_det);
+                            }
+
+                            mMovie = movie;
+                            updatePageInfo();
+                        } else {
+                            if(isConnected) {
+                                //info isn't fresh, redownload
+                                MovieAsyncTask task = new MovieAsyncTask();
+                                task.execute();
+                            }
                         }
-
-                        if (curTrailer.moveToFirst()) {
-                            ArrayList<String[]> trailer_det = new ArrayList<String[]>();
-                            do {
-                                trailer_det.add(new String[]{
-                                        curTrailer.getString(curTrailer.getColumnIndex(MovieContract.TrailerEntry.COLUMN_NAME)),
-                                        curTrailer.getString(curTrailer.getColumnIndex(MovieContract.TrailerEntry.COLUMN_SOURCE))
-                                });
-                            } while (curTrailer.moveToNext());
-                            movie.setTrailers(trailer_det);
+                    else {
+                        if(isConnected) {
+                            //info isn't fresh, redownload
+                            MovieAsyncTask task = new MovieAsyncTask();
+                            task.execute();
                         }
-
-                        if (curReviews.moveToFirst()) {
-                            ArrayList<String[]> reviews_det = new ArrayList<String[]>();
-                            do {
-                                reviews_det.add(new String[]{
-                                        curReviews.getString(curReviews.getColumnIndex(MovieContract.ReviewEntry.COLUMN_REVIEW_ID)),
-                                        curReviews.getString(curReviews.getColumnIndex(MovieContract.ReviewEntry.COLUMN_AUTHOR)),
-                                        curReviews.getString(curReviews.getColumnIndex(MovieContract.ReviewEntry.COLUMN_CONTENT))
-                                });
-                            } while (curReviews.moveToNext());
-                            movie.setReviews(reviews_det);
-                        }
-
-                        mMovie = movie;
-                        updatePageInfo();
-                    } else {
+                    }
+                } else {
+                    if(isConnected) {
                         //info isn't fresh, redownload
                         MovieAsyncTask task = new MovieAsyncTask();
                         task.execute();
                     }
-                else {
-                    MovieAsyncTask task = new MovieAsyncTask();
-                    task.execute();
                 }
             } else {
-                MovieAsyncTask task = new MovieAsyncTask();
-                task.execute();
-            }
-        } else {
-            mMovie = savedInstanceState.getParcelable("movie");
-            if(mMovie != null) {
-                updatePageInfo();
-            } else {
-                MovieAsyncTask task = new MovieAsyncTask();
-                task.execute();
+                mMovie = savedInstanceState.getParcelable("movie");
+                if (mMovie != null) {
+                    updatePageInfo();
+                } else {
+                    if(isConnected) {
+                        //info isn't fresh, redownload
+                        MovieAsyncTask task = new MovieAsyncTask();
+                        task.execute();
+                    }
+                }
             }
         }
     }
@@ -233,6 +278,7 @@ public class MovieDetailFragment extends Fragment {
     public void updatePageInfo() {
         Utils utils = new Utils();
         txtTitle.setText(mMovie.getTitle());
+        mShareMovieTitle = mMovie.getTitle();
         if(isFav) {
             togFav.setChecked(true);
         } else {
@@ -315,6 +361,10 @@ public class MovieDetailFragment extends Fragment {
                 //Picasso.with(getActivity()).load(trailerPoster).into(img);
                 Glide.with(getActivity()).load(trailerPoster).centerCrop().into(img);
 
+                if(p == 0) {
+                    mShareTrailerURL = Uri.parse("http://www.youtube.com/watch?v=" + videoURL).toString();
+                }
+
                 card.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -347,12 +397,38 @@ public class MovieDetailFragment extends Fragment {
         ratingBar.setRating((float) mMovie.getVoteAverage());
         txtOverview.setText(mMovie.getOverview());
         mActionBar.setTitle(mMovie.getTitle());
+
+        // If onCreateOptionsMenu has already happened, we need to update the share intent now.
+        if (mShareActionProvider != null) {
+            mShareActionProvider.setShareIntent(createShareTrailerIntent());
+        }
     }
 
     @Override
     public void onCreateOptionsMenu (Menu menu, MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
+        // Inflate the menu; this adds items to the action bar if it is present.
+        inflater.inflate(R.menu.menu_detail, menu);
 
+        // Retrieve the share menu item
+        MenuItem menuItem = menu.findItem(R.id.action_share);
+
+        // Get the provider and hold onto it to set/change the share intent.
+        mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menuItem);
+
+        // If onLoadFinished happens before this, we can go ahead and set the share intent now.
+        if (mShareMovieTitle != null) {
+            mShareActionProvider.setShareIntent(createShareTrailerIntent());
+        }
+    }
+
+    private String mShareText = "Check out this trailer for the movie ";
+
+    private Intent createShareTrailerIntent() {
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
+        shareIntent.setType("text/plain");
+        shareIntent.putExtra(Intent.EXTRA_TEXT, mShareText + mShareMovieTitle + "! " + mShareTrailerURL);
+        return shareIntent;
     }
 
     @Override

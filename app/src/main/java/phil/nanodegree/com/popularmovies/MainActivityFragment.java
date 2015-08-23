@@ -10,6 +10,8 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -72,8 +74,12 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
     private Bundle savedState = null;
     private boolean mRestored = false;
     private boolean isConnected;
+    private boolean mTwoPane;
+    private boolean mFirstOpen;
+    private final int MSG_INITIAL_OPEN = 5;
 
     private static final int MOVIES_LOADER = 0;
+    private static final String MOVIEDETAILFRAGMENT_TAG = "MDFTAG";
 
     public Fragment fragment = this;
 
@@ -87,6 +93,22 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
             MovieContract.MovieEntry.COLUMN_SORT,
             MovieContract.MovieEntry.COLUMN_DATE_ADDED
     };
+
+    /**
+     * A callback interface that all activities containing this fragment must
+     * implement. This mechanism allows activities to be notified of item
+     * selections.
+     */
+    public interface Callback {
+        /**
+         * DetailFragmentCallback for when an item has been selected.
+         */
+        public void onItemSelected(int movieId, boolean preLoaded);
+    }
+
+    public void setIfTwoPane(boolean twoPane) {
+        this.mTwoPane = twoPane;
+    }
 
     public MainActivityFragment() {
     }
@@ -112,35 +134,14 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
                 Cursor mCursor = mCursorAdapter.getCursor();
                 if(mCursor.moveToPosition(position)) {
                     int movieId = mCursor.getInt(mCursor.getColumnIndex(MovieContract.MovieEntry._ID));
-                    if(!isConnected) {
+                    if( movieId != 0) {
                         String backdrop = mCursor.getString(mCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_BACKDROP_PATH));
+                        boolean preLoaded = true;
                         if(backdrop == null || backdrop.equals("") || backdrop.equals("null")) {
-                            Toast.makeText(getActivity(), "Content not downloaded for this title, please reconnect internet connection to view details!", Toast.LENGTH_LONG).show();
-                        } else {
-                            Bundle args = new Bundle();
-                            args.putInt("movieId", movieId);
-
-                            MovieDetailFragment mdf = new MovieDetailFragment();
-                            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-                            transaction.addToBackStack(null);
-
-                            mdf.setArguments(args);
-                            transaction.replace(R.id.content_frame, mdf);
-
-                            transaction.commit();
+                            preLoaded = false;
                         }
-                    } else {
-                        Bundle args = new Bundle();
-                        args.putInt("movieId", movieId);
-
-                        MovieDetailFragment mdf = new MovieDetailFragment();
-                        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-                        transaction.addToBackStack(null);
-
-                        mdf.setArguments(args);
-                        transaction.replace(R.id.content_frame, mdf);
-
-                        transaction.commit();
+                        ((Callback) getActivity())
+                                .onItemSelected(movieId, preLoaded);
                     }
                 }
             }
@@ -159,16 +160,18 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
 
             @Override
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-                if (view.getId() == mGridView.getId()) {
-                    final int currentFirstVisibleItem = mGridView.getFirstVisiblePosition();
+                if(!mTwoPane) {
+                    if (view.getId() == mGridView.getId()) {
+                        final int currentFirstVisibleItem = mGridView.getFirstVisiblePosition();
 
-                    if (currentFirstVisibleItem > mLastFirstVisibleItem) {
-                        mActionBar.hide();
-                    } else if (currentFirstVisibleItem < mLastFirstVisibleItem) {
-                        mActionBar.show();
+                        if (currentFirstVisibleItem > mLastFirstVisibleItem) {
+                            mActionBar.hide();
+                        } else if (currentFirstVisibleItem < mLastFirstVisibleItem) {
+                            mActionBar.show();
+                        }
+
+                        mLastFirstVisibleItem = currentFirstVisibleItem;
                     }
-
-                    mLastFirstVisibleItem = currentFirstVisibleItem;
                 }
             }
         });
@@ -217,6 +220,7 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
         //When navigating back from the back stack, we need to get the info from the Bundle we included
         if(savedInstanceState != null && savedState == null) {
             savedState = savedInstanceState.getBundle("movies");
+            mFirstOpen = true;
         }
         //Only download if we don't already have the data
         if(savedState != null) {
@@ -228,8 +232,11 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
                 if(Utils.checkIfSectionDataIsCurrent(getActivity())) {
 
                 } else {
-                    MovieAsyncTask task = new MovieAsyncTask();
-                    task.execute();
+                    //Only download if we're connected and not in the favorite section
+                    if(mPrefSort != 20) {
+                        MovieAsyncTask task = new MovieAsyncTask();
+                        task.execute();
+                    }
                 }
             }
         }
@@ -329,6 +336,7 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
         int id = item.getItemId();
 
         Utils.setSortSection(getActivity(), id);
+        mFirstOpen = false;
 
         if (id == R.id.action_sort_popular) {
             searchParam = mPrefSearchPopular;
@@ -385,7 +393,36 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
         } else if(mPrefSort == 20) {
             mActionBar.setTitle(R.string.favorites);
         }
+
+        if(mTwoPane) {
+            clearDetails();
+        }
     }
+
+    private void clearDetails() {
+        MovieDetailFragment mdf = (MovieDetailFragment)getActivity().getSupportFragmentManager().findFragmentByTag(MOVIEDETAILFRAGMENT_TAG);
+        getActivity().getSupportFragmentManager().beginTransaction()
+                .detach(mdf)
+                .commit();
+    }
+
+    private void initialClick() {
+        if(mTwoPane) {
+            if(!mFirstOpen) {
+                mGridView.performItemClick(mGridView.getChildAt(0), 0, mCursorAdapter.getItemId(0));
+                mFirstOpen = true;
+            }
+        }
+    }
+
+    private Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            if(msg.what == MSG_INITIAL_OPEN) {
+                initialClick();
+            }
+        }
+    };
 
     @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
@@ -408,6 +445,10 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         mCursorAdapter.swapCursor(data);
+
+        if(!mFirstOpen) {
+            handler.sendEmptyMessage(MSG_INITIAL_OPEN);
+        }
     }
 
     @Override
@@ -581,9 +622,9 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
 
                         ContentValues cv = new ContentValues();
 
-                        double sort = curMov.getDouble(curMov.getColumnIndex(MovieContract.MovieEntry.COLUMN_SORT));
+                        int sort = curMov.getInt(curMov.getColumnIndex(MovieContract.MovieEntry.COLUMN_SORT));
                         int addSort = Utils.getSortSection(getActivity());
-                        sort += addSort;
+                        sort = Utils.getUpdatedMovieSortValue(addSort, sort);
 
                         cv.put(MovieContract.MovieEntry.COLUMN_SORT, sort);
                         cv.put(MovieContract.MovieEntry.COLUMN_DATE_ADDED, Long.toString(dayTime.setJulianDay(julianStartDay)));
